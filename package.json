@@ -1,0 +1,42 @@
+{
+  "name": "langchain-rag-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for RAG over LangChain documentation and source code",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "ingest": "tsx scripts/ingest.ts",
+    "test": "vitest"
+  },
+  "keywords": [
+    "mcp",
+    "langchain",
+    "rag",
+    "embeddings"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@chroma-core/default-embed": "^0.1.9",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@octokit/rest": "^21.0.0",
+    "adm-zip": "^0.5.0",
+    "axios": "^1.7.0",
+    "chromadb": "^1.10.0",
+    "dotenv": "^16.4.0",
+    "gray-matter": "^4.0.3",
+    "minimatch": "^10.0.0",
+    "p-queue": "^8.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
