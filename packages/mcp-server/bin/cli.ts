@@ -4,7 +4,7 @@ import { Command } from 'commander';
 import http from 'http';
 import open from 'open';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { loadConfig, saveConfig, deleteConfig, getConfigPath, DEFAULT_API_URL } from '../src/config.js';
+import { loadConfig, saveConfig, deleteConfig, getConfigPath, DEFAULT_API_URL, WEBSITE_URL } from '../src/config.js';
 import { APIClient } from '../src/api-client.js';
 import { createServer } from '../src/server.js';
 
@@ -50,12 +50,11 @@ program
   });
 
 /**
- * Login command - supports Google and GitHub OAuth
+ * Login command - Google OAuth
  */
 program
   .command('login')
   .description('Login to LangChain MCP service')
-  .option('--provider <provider>', 'OAuth provider: google or github', 'google')
   .option('--no-browser', 'Print URL instead of opening browser')
   .option('--api-url <url>', 'API server URL', DEFAULT_API_URL)
   .action(async (options) => {
@@ -66,19 +65,13 @@ program
       return;
     }
 
-    const provider = options.provider.toLowerCase();
-    if (provider !== 'google' && provider !== 'github') {
-      console.error('Invalid provider. Use --provider google or --provider github');
-      process.exit(1);
-    }
-
-    await loginWithWebFlow(options.apiUrl, provider, options.browser);
+    await loginWithWebFlow(options.apiUrl, options.browser);
   });
 
 /**
- * Web Flow login - opens browser for OAuth
+ * Web Flow login - opens browser for Google OAuth
  */
-async function loginWithWebFlow(apiUrl: string, provider: 'google' | 'github', openBrowser: boolean) {
+async function loginWithWebFlow(apiUrl: string, openBrowser: boolean) {
   const port = 9876;
   const callbackUrl = `http://localhost:${port}/callback`;
 
@@ -91,17 +84,10 @@ async function loginWithWebFlow(apiUrl: string, provider: 'google' | 'github', o
       const error = url.searchParams.get('error');
 
       if (error) {
-        res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(`
-          <!DOCTYPE html>
-          <html>
-          <head><title>Login Failed</title></head>
-          <body style="font-family: system-ui; text-align: center; padding: 50px;">
-            <h1>❌ Login Failed</h1>
-            <p>${error}</p>
-          </body>
-          </html>
-        `);
+        const failureUrl = new URL(`${WEBSITE_URL}/failure.html`);
+        failureUrl.searchParams.set('error', error);
+        res.writeHead(302, { 'Location': failureUrl.toString() });
+        res.end();
         console.error(`\nLogin failed: ${error}`);
         server.close();
         process.exit(1);
@@ -140,18 +126,11 @@ async function loginWithWebFlow(apiUrl: string, provider: 'google' | 'github', o
           printDivider();
           console.log('');
 
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.end(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>Login Successful</title></head>
-            <body style="font-family: system-ui; text-align: center; padding: 50px;">
-              <h1>✅ Login Successful!</h1>
-              <p>Welcome, ${user.name || user.email}!</p>
-              <p>You can close this window and return to your terminal.</p>
-            </body>
-            </html>
-          `);
+          // Redirect to homepage success page
+          const successUrl = new URL(`${WEBSITE_URL}/success.html`);
+          successUrl.searchParams.set('name', user.name || user.email);
+          res.writeHead(302, { 'Location': successUrl.toString() });
+          res.end();
 
           setTimeout(() => {
             server.close();
@@ -185,11 +164,9 @@ async function loginWithWebFlow(apiUrl: string, provider: 'google' | 'github', o
   });
 
   server.listen(port, () => {
-    // OAuth URL via our API
-    const authUrl = `${apiUrl}/auth/${provider}?callback=${encodeURIComponent(callbackUrl)}`;
+    const authUrl = `${apiUrl}/auth/google?callback=${encodeURIComponent(callbackUrl)}`;
 
-    const providerName = provider === 'google' ? 'Google' : 'GitHub';
-    console.log(`🔐 Logging in with ${providerName}...`);
+    console.log('🔐 Logging in with Google...');
 
     if (openBrowser) {
       console.log('Opening browser for login...');

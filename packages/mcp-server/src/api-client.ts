@@ -40,6 +40,12 @@ export interface APIError {
   };
 }
 
+// Convert language from user-friendly names to API format
+function mapLanguage(lang?: 'python' | 'javascript'): 'py' | 'js' | undefined {
+  if (!lang) return undefined;
+  return lang === 'python' ? 'py' : 'js';
+}
+
 export class APIClient {
   constructor(
     private baseUrl: string,
@@ -75,29 +81,49 @@ export class APIClient {
   async searchDocs(input: {
     query: string;
     limit?: number;
-    product?: string;
-    language?: string;
+    language?: 'python' | 'javascript';
   }): Promise<SearchResponse> {
-    return this.request('POST', '/search/docs', input);
+    return this.request('POST', '/search/docs', {
+      query: input.query,
+      limit: input.limit,
+      language: mapLanguage(input.language),
+    });
   }
 
-  async searchCode(input: {
+  async searchLangchainCode(input: {
     query: string;
     limit?: number;
-    product?: string;
-    language?: string;
-    code_type?: string;
+    language?: 'python' | 'javascript';
   }): Promise<SearchResponse> {
-    return this.request('POST', '/search/code', input);
+    return this.request('POST', '/search/langchain', {
+      query: input.query,
+      limit: input.limit,
+      language: mapLanguage(input.language),
+    });
   }
 
-  async searchHybrid(input: {
+  async searchLanggraphCode(input: {
     query: string;
     limit?: number;
-    include_docs?: boolean;
-    include_code?: boolean;
+    language?: 'python' | 'javascript';
   }): Promise<SearchResponse> {
-    return this.request('POST', '/search/hybrid', input);
+    return this.request('POST', '/search/langgraph', {
+      query: input.query,
+      limit: input.limit,
+      language: mapLanguage(input.language),
+    });
+  }
+
+  async searchDeepagentCode(input: {
+    query: string;
+    limit?: number;
+    language?: 'python' | 'javascript';
+  }): Promise<SearchResponse> {
+    return this.request('POST', '/search/deepagent', {
+      query: input.query,
+      limit: input.limit,
+      language: mapLanguage(input.language),
+    });
   }
 
   async getUsage(): Promise<UsageResponse> {

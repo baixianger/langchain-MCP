@@ -1,7 +1,12 @@
 import { getDatabase } from '../db/index.js';
 import { SearchResult } from './vectorstore.js';
-
-const GITHUB_SPONSORS_URL = 'https://github.com/sponsors/baixianger';
+import {
+  DONATION_URL,
+  INITIAL_CREDITS_CENTS,
+  HARD_LIMIT_CENTS,
+  REMINDER_THRESHOLD,
+  TOKENS_PER_CENT,
+} from '../config.js';
 
 /**
  * Calculate tokens from input query and output results.
@@ -40,27 +45,38 @@ export function recordUsage(
 ): {
   creditsRemaining: number;
   shouldRemindDonation: boolean;
+  isBlocked: boolean;
   donationUrl: string;
 } {
   const db = getDatabase();
   const totalTokens = inputTokens + outputTokens;
 
-  // 1000 tokens = 1 cent
-  const costCents = Math.ceil(totalTokens / 1000);
+  // Token cost based on TOKENS_PER_CENT from config
+  const costCents = Math.ceil(totalTokens / TOKENS_PER_CENT);
+
+  // Get current credits first to check hard limit
+  const user = db.prepare('SELECT credits_cents FROM users WHERE id = ?').get(userId) as { credits_cents: number } | undefined;
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Check hard limit BEFORE deducting
+  if (user.credits_cents <= HARD_LIMIT_CENTS) {
+    return {
+      creditsRemaining: user.credits_cents,
+      shouldRemindDonation: true,
+      isBlocked: true,
+      donationUrl: DONATION_URL,
+    };
+  }
 
   const result = db.transaction(() => {
-    // Get current credits
-    const user = db.prepare('SELECT credits_cents FROM users WHERE id = ?').get(userId) as { credits_cents: number } | undefined;
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Deduct credits (allow negative balance)
+    // Deduct credits (allow negative balance until hard limit)
     db.prepare("UPDATE users SET credits_cents = credits_cents - ?, updated_at = datetime('now') WHERE id = ?")
       .run(costCents, userId);
 
-    // Update daily aggregate with input/output breakdown
+    // Update daily aggregate
     const today = new Date().toISOString().split('T')[0];
     db.prepare(`
       INSERT INTO usage_daily (user_id, date, tokens_used, requests)
@@ -73,10 +89,15 @@ export function recordUsage(
     return user.credits_cents - costCents;
   })();
 
+  // Show reminder at 5% of initial credits remaining
+  const reminderThresholdCents = INITIAL_CREDITS_CENTS * REMINDER_THRESHOLD;
+  const shouldRemind = result <= reminderThresholdCents;
+
   return {
     creditsRemaining: result,
-    shouldRemindDonation: result <= 0,
-    donationUrl: GITHUB_SPONSORS_URL,
+    shouldRemindDonation: shouldRemind,
+    isBlocked: false,
+    donationUrl: DONATION_URL,
   };
 }
 
@@ -123,6 +144,6 @@ export function getUsageStats(userId: string) {
       this_month: { tokens: monthUsage.tokens, requests: monthUsage.requests },
       all_time: { tokens: allTimeUsage.tokens, requests: allTimeUsage.requests },
     },
-    donation_url: GITHUB_SPONSORS_URL,
+    donation_url: DONATION_URL,
   };
 }

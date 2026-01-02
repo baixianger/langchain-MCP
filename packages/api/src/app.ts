@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import searchRoutes from './routes/search.js';
 import usageRoutes from './routes/usage.js';
 import billingRoutes from './routes/billing.js';
+import webhookRoutes from './routes/webhook.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -12,6 +13,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // For Ko-fi webhook
 
 // Static files
 app.use(express.static(join(__dirname, '../public')));
@@ -37,6 +39,7 @@ app.use('/auth', authRoutes);
 app.use('/search', searchRoutes);
 app.use('/usage', usageRoutes);
 app.use('/billing', billingRoutes);
+app.use('/webhook', webhookRoutes);
 
 // Error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

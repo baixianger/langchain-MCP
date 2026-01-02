@@ -567,7 +567,7 @@
     }
 
     .install-tabs + .install-content {
-      padding: 0 0 14px 0;
+      padding: 0;
       margin: 0 14px;
     }
 
@@ -931,7 +931,7 @@
       </a>
       <nav class="nav">
         <a href="#features">Features</a>
-        <a href="#install">Install</a>
+        <a href="#tutorial">Tutorial</a>
         <a href="https://github.com/baixianger/langchain-mcp">GitHub</a>
         <a href="#" onclick="openKofiModal(); return false;">Support</a>
       </nav>
@@ -946,7 +946,7 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
     <a href="#features" onclick="toggleMobileMenu()">Features</a>
-    <a href="#install" onclick="toggleMobileMenu()">Install</a>
+    <a href="#tutorial" onclick="toggleMobileMenu()">Tutorial</a>
     <a href="https://github.com/baixianger/langchain-mcp" onclick="toggleMobileMenu()">GitHub</a>
     <a href="#" onclick="toggleMobileMenu(); openKofiModal(); return false;">Support</a>
   </div>
@@ -977,7 +977,7 @@
 
       <div class="install-panel" id="installPanel">
         <div class="mac-titlebar">
-          <span class="mac-title-text">INSTALL</span>
+          <span class="mac-title-text">QUICK START</span>
           <div class="mac-dots">
             <span class="mac-dot"></span>
             <span class="mac-dot"></span>
@@ -1031,26 +1031,26 @@
   </section>
 
   <!-- Install -->
-  <section class="steps-section" id="install">
-    <h2 class="section-title">Installation</h2>
+  <section class="steps-section" id="tutorial">
+    <h2 class="section-title">Tutorial</h2>
     <p class="section-subtitle">Works with Claude Code, Claude Desktop, Cursor and any MCP-compatible client</p>
 
     <div class="install-window">
       <div class="install-titlebar">
-        <span class="mac-title-text">INSTALL</span>
+        <span class="mac-title-text">QUICK START</span>
         <div class="install-dots">
           <span></span>
           <span></span>
           <span></span>
         </div>
       </div>
-      <div class="install-content">
+      <div class="install-content" style="padding-bottom: 0;">
         <div class="install-step-label">Step 1: Install CLI</div>
         <div class="install-pane active">
           <pre><span class="line-num">$</span> npm i -g langchain-mcp
 <span class="line-num">$</span> langchain-mcp login<button class="copy-icon" onclick="copyStep1(this)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
         </div>
-        <div class="install-step-label" style="margin-top: 16px;">Step 2: Configure Client</div>
+        <div class="install-step-label" style="margin-top: 16px; margin-bottom: 8px;">Step 2: Configure Client</div>
       </div>
       <div class="install-tabs">
         <button class="install-tab active" onclick="switchInstallTab(0)">Claude Code</button>
@@ -1082,6 +1082,12 @@
   }
 }<button class="copy-icon" onclick="copyInstall(this, 2)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
           <p>Config: <code>~/.cursor/mcp.json</code></p>
+        </div>
+      </div>
+      <div style="padding: 0 14px 14px 14px;">
+        <div class="install-step-label" style="margin-top: 16px;">Optional: Check Usage</div>
+        <div class="install-pane active">
+          <pre><span class="line-num">$</span> langchain-mcp status<button class="copy-icon" onclick="copyToClipboard('langchain-mcp status', this)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
         </div>
       </div>
     </div>

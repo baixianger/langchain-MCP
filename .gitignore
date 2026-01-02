@@ -11,6 +11,14 @@ dist/
 # ChromaDB data
 data/
 
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
 # IDE
 .vscode/
 .idea/

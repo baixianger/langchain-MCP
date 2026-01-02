@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Failed - LangChain MCP</title>
+  <link rel="icon" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F6F4EE;
+      color: #1A1A1A;
+      min-height: 100vh;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 40px;
+      background: rgba(246, 244, 238, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo span {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 2px solid #1A1A1A;
+      box-shadow: 3px 3px 0 #1A1A1A;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 60px;
+    }
+
+    .error-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 32px;
+      animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: #ef4444;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #666;
+      margin-bottom: 16px;
+      animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    .error-message {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .retry-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #1A1A1A;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 2px solid #1A1A1A;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      animation: fadeInUp 0.6s ease-out 0.8s both;
+    }
+
+    .retry-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 12px 20px;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .error-icon {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo"><span>LangChain MCP</span></a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <svg class="error-icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="56" stroke="#ef4444" stroke-width="8" fill="none"/>
+      <path d="M40 40L80 80M80 40L40 80" stroke="#ef4444" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1 class="hero-title">Login Failed</h1>
+    <p class="hero-subtitle">Something went wrong during authentication.</p>
+    <p class="error-message" id="errorMessage"></p>
+    <a href="/" class="retry-btn">Try Again</a>
+  </section>
+
+  <script>
+    // Get error message from URL params
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error) {
+      document.getElementById('errorMessage').textContent = error;
+    }
+  </script>
+</body>
+</html>

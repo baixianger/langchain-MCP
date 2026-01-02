@@ -51,7 +51,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ### CLI Commands
 
 ```bash
-langchain-mcp login      # Login via GitHub
+langchain-mcp login      # Login via Google
 langchain-mcp status     # Check usage and credits
 langchain-mcp logout     # Logout
 ```
@@ -113,16 +113,24 @@ See: https://docs.trychroma.com/integrations/chroma-integrations
 
 ## MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `search_langchain_docs` | Search documentation |
-| `search_langchain_code` | Search source code |
-| `search_langchain` | Hybrid search (docs + code) |
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `search_docs` | Search LangChain documentation | `query`, `limit` |
+| `search_langchain_code` | Search LangChain source code | `query`, `limit`, `language` (py/js) |
+| `search_langgraph_code` | Search LangGraph source code | `query`, `limit`, `language` (py/js) |
+| `search_deepagent_code` | Search DeepAgent source code | `query`, `limit`, `language` (py/js) |
 
 ## Pricing
 
-- **Free credits**: $5 per new user
-- **Cost**: ~$0.03 per search (~150 free searches)
+- **Free credits**: $5 per new user (~2000 searches)
+- **Cost**: $0.0005 per 1K tokens
+- **Donation bonus**: Donate $5, get $10 credits (200%)
+
+## Roadmap
+
+- [ ] Rate limiting (per user / per IP)
+- [ ] More embedding models
+- [ ] Local mode (no API key required)
 
 ## License
 

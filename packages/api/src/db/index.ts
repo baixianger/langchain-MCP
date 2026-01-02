@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DB_PATH = process.env.DB_PATH || join(__dirname, '../../data/langchain.db');
+const DB_PATH = process.env.DB_PATH || join(__dirname, '../../data/users.db');
 
 let db: Database.Database | null = null;
 

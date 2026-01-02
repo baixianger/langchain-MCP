@@ -18,7 +18,7 @@ export const CODE_REPOS: RepoName[] = [
   'langchain', 'langchainjs', 'langgraph', 'langgraphjs', 'deepagents', 'deepagentsjs'
 ];
 
-export type Language = 'python' | 'javascript';
+export type Language = 'py' | 'js';
 
 export interface DocumentMetadata {
   filePath: string;
@@ -171,16 +171,33 @@ export class VectorStore {
 
   async searchDocs(
     query: string,
-    options?: { limit?: number; product?: string; language?: Language }
+    options?: { limit?: number }
   ): Promise<SearchResult[]> {
-    return this.search(query, { repos: ['docs'], ...options });
+    return this.search(query, { repos: ['docs'], limit: options?.limit });
   }
 
-  async searchCode(
+  async searchLangchain(
     query: string,
-    options?: { limit?: number; language?: Language; codeType?: 'function' | 'class' | 'module' }
+    options: { limit?: number; language: Language }
   ): Promise<SearchResult[]> {
-    return this.search(query, { repos: CODE_REPOS, ...options });
+    const repo: RepoName = options.language === 'py' ? 'langchain' : 'langchainjs';
+    return this.search(query, { repos: [repo], limit: options.limit });
+  }
+
+  async searchLanggraph(
+    query: string,
+    options: { limit?: number; language: Language }
+  ): Promise<SearchResult[]> {
+    const repo: RepoName = options.language === 'py' ? 'langgraph' : 'langgraphjs';
+    return this.search(query, { repos: [repo], limit: options.limit });
+  }
+
+  async searchDeepagent(
+    query: string,
+    options: { limit?: number; language: Language }
+  ): Promise<SearchResult[]> {
+    const repo: RepoName = options.language === 'py' ? 'deepagents' : 'deepagentsjs';
+    return this.search(query, { repos: [repo], limit: options.limit });
   }
 
   private formatResults(

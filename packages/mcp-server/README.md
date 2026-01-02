@@ -28,7 +28,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ## CLI Commands
 
 ```bash
-langchain-mcp login    # Login with GitHub/Google
+langchain-mcp login    # Login with Google
 langchain-mcp status   # Check login status and usage
 langchain-mcp logout   # Logout
 ```
@@ -37,19 +37,20 @@ langchain-mcp logout   # Logout
 
 | Tool | Description |
 |------|-------------|
-| `search_langchain_docs` | Search documentation |
-| `search_langchain_code` | Search source code |
-| `search_langchain` | Hybrid search (docs + code) |
+| `search_langchain_docs` | Search LangChain documentation |
+| `search_langchain_code` | Search LangChain source code |
+| `search_langgraph_code` | Search LangGraph source code |
+| `search_deepagent_code` | Search DeepAgent source code |
 
 ## Free Credits
 
-New users get **$5 free credits** (~150 searches).
+New users get **$5 free credits** (~2000 searches).
 
 ## Links
 
 - Website: https://langchain-mcp.xyz
 - GitHub: https://github.com/baixianger/langchain-mcp
-- Sponsor: https://github.com/sponsors/baixianger
+- Sponsor: https://ko-fi.com/baixianger
 
 ## License
 

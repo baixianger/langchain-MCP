@@ -10,24 +10,61 @@ const router = Router();
 const searchDocsSchema = z.object({
   query: z.string().min(1),
   limit: z.number().int().min(1).max(20).default(5),
-  product: z.enum(['langsmith', 'langchain', 'langgraph', 'deepagents', 'oss']).optional(),
-  language: z.enum(['python', 'javascript']).optional(),
 });
 
 const searchCodeSchema = z.object({
   query: z.string().min(1),
   limit: z.number().int().min(1).max(20).default(5),
-  product: z.enum(['langchain', 'langgraph', 'deepagents']).optional(),
-  language: z.enum(['python', 'javascript']).optional(),
-  code_type: z.enum(['function', 'class', 'module']).optional(),
+  language: z.enum(['py', 'js']),
 });
 
-const searchHybridSchema = z.object({
-  query: z.string().min(1),
-  limit: z.number().int().min(1).max(20).default(10),
-  include_docs: z.boolean().default(true),
-  include_code: z.boolean().default(true),
-});
+// Helper to build response
+function buildResponse(
+  res: import('express').Response,
+  results: import('../lib/vectorstore.js').SearchResult[],
+  query: string,
+  userId: string
+) {
+  const { inputTokens, outputTokens, totalTokens } = calculateTokens(query, results);
+  const { creditsRemaining, shouldRemindDonation, isBlocked, donationUrl } = recordUsage(userId, inputTokens, outputTokens);
+
+  // Block if credits exceeded hard limit
+  if (isBlocked) {
+    return res.status(402).json({
+      error: {
+        code: 'CREDITS_EXHAUSTED',
+        message: 'Your credits have been exhausted. Please donate to continue using the service.',
+      },
+      credits_remaining: creditsRemaining / 100,
+      donation_url: donationUrl,
+    });
+  }
+
+  res.json({
+    results,
+    usage: {
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      total_tokens: totalTokens,
+      credits_remaining: creditsRemaining / 100,
+    },
+    ...(shouldRemindDonation && {
+      reminder: {
+        message: '☕ Enjoying LangChain MCP? Donate $5, get $10 credits (20M tokens)!',
+        donation_url: donationUrl,
+      },
+    }),
+  });
+}
+
+// Helper to handle errors
+function handleError(res: import('express').Response, error: unknown) {
+  if (error instanceof z.ZodError) {
+    return res.status(400).json({ error: { code: 'INVALID_REQUEST', message: error.message } });
+  }
+  console.error('Search error:', error);
+  res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Search failed' } });
+}
 
 /**
  * POST /search/docs
@@ -35,126 +72,62 @@ const searchHybridSchema = z.object({
 router.post('/docs', authMiddleware, async (req, res) => {
   try {
     const input = searchDocsSchema.parse(req.body);
-    const user = req.user!;
-
     const vectorStore = await getVectorStore();
-    const results = await vectorStore.searchDocs(input.query, {
-      limit: input.limit,
-      product: input.product,
-      language: input.language,
-    });
-
-    const { inputTokens, outputTokens, totalTokens } = calculateTokens(input.query, results);
-    const { creditsRemaining, shouldRemindDonation, donationUrl } = recordUsage(user.id, inputTokens, outputTokens);
-
-    res.json({
-      results,
-      usage: {
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        total_tokens: totalTokens,
-        credits_remaining: creditsRemaining / 100,
-      },
-      ...(shouldRemindDonation && {
-        reminder: {
-          message: '☕ Enjoying LangChain MCP? Consider supporting the project!',
-          donation_url: donationUrl,
-        },
-      }),
-    });
+    const results = await vectorStore.searchDocs(input.query, { limit: input.limit });
+    buildResponse(res, results, input.query, req.user!.id);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: 'INVALID_REQUEST', message: error.message } });
-    }
-    console.error('Search error:', error);
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Search failed' } });
+    handleError(res, error);
   }
 });
 
 /**
- * POST /search/code
+ * POST /search/langchain
  */
-router.post('/code', authMiddleware, async (req, res) => {
+router.post('/langchain', authMiddleware, async (req, res) => {
   try {
     const input = searchCodeSchema.parse(req.body);
-    const user = req.user!;
-
     const vectorStore = await getVectorStore();
-    const results = await vectorStore.searchCode(input.query, {
+    const results = await vectorStore.searchLangchain(input.query, {
       limit: input.limit,
       language: input.language,
-      codeType: input.code_type,
     });
-
-    const { inputTokens, outputTokens, totalTokens } = calculateTokens(input.query, results);
-    const { creditsRemaining, shouldRemindDonation, donationUrl } = recordUsage(user.id, inputTokens, outputTokens);
-
-    res.json({
-      results,
-      usage: {
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        total_tokens: totalTokens,
-        credits_remaining: creditsRemaining / 100,
-      },
-      ...(shouldRemindDonation && {
-        reminder: {
-          message: '☕ Enjoying LangChain MCP? Consider supporting the project!',
-          donation_url: donationUrl,
-        },
-      }),
-    });
+    buildResponse(res, results, input.query, req.user!.id);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: 'INVALID_REQUEST', message: error.message } });
-    }
-    console.error('Search error:', error);
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Search failed' } });
+    handleError(res, error);
   }
 });
 
 /**
- * POST /search/hybrid
+ * POST /search/langgraph
  */
-router.post('/hybrid', authMiddleware, async (req, res) => {
+router.post('/langgraph', authMiddleware, async (req, res) => {
   try {
-    const input = searchHybridSchema.parse(req.body);
-    const user = req.user!;
-
+    const input = searchCodeSchema.parse(req.body);
     const vectorStore = await getVectorStore();
-    const results = await vectorStore.search(input.query, {
+    const results = await vectorStore.searchLanggraph(input.query, {
       limit: input.limit,
-      repos: input.include_docs && input.include_code
-        ? undefined
-        : input.include_docs
-          ? ['docs']
-          : ['langchain', 'langchainjs', 'langgraph', 'langgraphjs', 'deepagents', 'deepagentsjs'],
+      language: input.language,
     });
-
-    const { inputTokens, outputTokens, totalTokens } = calculateTokens(input.query, results);
-    const { creditsRemaining, shouldRemindDonation, donationUrl } = recordUsage(user.id, inputTokens, outputTokens);
-
-    res.json({
-      results,
-      usage: {
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        total_tokens: totalTokens,
-        credits_remaining: creditsRemaining / 100,
-      },
-      ...(shouldRemindDonation && {
-        reminder: {
-          message: '☕ Enjoying LangChain MCP? Consider supporting the project!',
-          donation_url: donationUrl,
-        },
-      }),
-    });
+    buildResponse(res, results, input.query, req.user!.id);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: 'INVALID_REQUEST', message: error.message } });
-    }
-    console.error('Search error:', error);
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Search failed' } });
+    handleError(res, error);
+  }
+});
+
+/**
+ * POST /search/deepagent
+ */
+router.post('/deepagent', authMiddleware, async (req, res) => {
+  try {
+    const input = searchCodeSchema.parse(req.body);
+    const vectorStore = await getVectorStore();
+    const results = await vectorStore.searchDeepagent(input.query, {
+      limit: input.limit,
+      language: input.language,
+    });
+    buildResponse(res, results, input.query, req.user!.id);
+  } catch (error) {
+    handleError(res, error);
   }
 });
 

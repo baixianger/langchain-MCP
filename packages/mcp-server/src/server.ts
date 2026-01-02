@@ -5,17 +5,15 @@ import { APIClient, SearchResult } from './api-client.js';
 
 // Schemas
 const searchDocsSchema = z.object({
-  query: z.string().describe('Natural language search query'),
-  limit: z.number().int().min(1).max(20).default(5).describe('Number of results to return (1-20)'),
-  product: z.enum(['langsmith', 'langchain', 'langgraph']).optional().describe('Filter by product: langchain, langgraph, or langsmith'),
-  language: z.enum(['python', 'javascript']).optional().describe('Filter by language: python or javascript'),
+  query: z.string().describe('Search query'),
+  limit: z.number().int().min(1).max(20).default(5).describe('Max results (1-20)'),
+  language: z.enum(['python', 'javascript']).optional().describe('Filter by language'),
 });
 
 const searchCodeSchema = z.object({
-  query: z.string().describe('Natural language search query'),
-  limit: z.number().int().min(1).max(20).default(5).describe('Number of results to return (1-20)'),
-  product: z.enum(['langchain', 'langgraph']).optional().describe('Filter by product: langchain or langgraph'),
-  language: z.enum(['python', 'javascript']).optional().describe('Filter by language: python or javascript'),
+  query: z.string().describe('Search query'),
+  limit: z.number().int().min(1).max(20).default(5).describe('Max results (1-20)'),
+  language: z.enum(['python', 'javascript']).optional().describe('Filter by language'),
 });
 
 function formatDocsResults(results: SearchResult[]): string {
@@ -45,7 +43,7 @@ function formatCodeResults(results: SearchResult[]): string {
 
   return results.map((r, i) => {
     const meta = r.metadata;
-    const lang = meta.language === 'python' ? 'python' : 'typescript';
+    const lang = meta.language === 'python' || meta.language === 'py' ? 'python' : 'typescript';
     const header = `## ${i + 1}. ${meta.filePath}`;
     const info = [
       meta.codeType && `Type: ${meta.codeType}`,
@@ -66,7 +64,7 @@ Please login first by running this command in your terminal:
 langchain-mcp login
 \`\`\`
 
-This will open a browser for GitHub/Google authentication.
+This will open a browser for Google authentication.
 After logging in, restart Claude to use the LangChain MCP tools.
 
 For more info: https://langchain-mcp.xyz`;
@@ -78,13 +76,13 @@ export function createServer(): McpServer {
 
   const server = new McpServer({
     name: 'langchain-mcp',
-    version: '1.0.0',
+    version: '1.2.0',
   });
 
   // search_langchain_docs
   server.tool(
     'search_langchain_docs',
-    'Search LangChain, LangGraph & LangSmith documentation. Find guides, tutorials, API references and concepts. Use product parameter to filter by langchain, langgraph, or langsmith. Use language parameter to filter by python or javascript.',
+    'Search LangChain documentation. Returns relevant docs based on your query.',
     searchDocsSchema.shape,
     async (input) => {
       if (!apiClient) {
@@ -120,7 +118,63 @@ export function createServer(): McpServer {
       }
       try {
         const params = searchCodeSchema.parse(input);
-        const response = await apiClient.searchCode(params);
+        const response = await apiClient.searchLangchainCode(params);
+
+        const formatted = formatCodeResults(response.results);
+        const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;
+
+        return {
+          content: [{ type: 'text', text: formatted + footer }],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // search_langgraph_code
+  server.tool(
+    'search_langgraph_code',
+    'Search LangGraph source code. Returns relevant code snippets.',
+    searchCodeSchema.shape,
+    async (input) => {
+      if (!apiClient) {
+        return { content: [{ type: 'text', text: LOGIN_MESSAGE }] };
+      }
+      try {
+        const params = searchCodeSchema.parse(input);
+        const response = await apiClient.searchLanggraphCode(params);
+
+        const formatted = formatCodeResults(response.results);
+        const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;
+
+        return {
+          content: [{ type: 'text', text: formatted + footer }],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // search_deepagent_code
+  server.tool(
+    'search_deepagent_code',
+    'Search DeepAgent source code. Returns relevant code snippets.',
+    searchCodeSchema.shape,
+    async (input) => {
+      if (!apiClient) {
+        return { content: [{ type: 'text', text: LOGIN_MESSAGE }] };
+      }
+      try {
+        const params = searchCodeSchema.parse(input);
+        const response = await apiClient.searchDeepagentCode(params);
 
         const formatted = formatCodeResults(response.results);
         const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;

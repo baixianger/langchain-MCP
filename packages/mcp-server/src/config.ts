@@ -17,6 +17,7 @@ const CONFIG_DIR = join(homedir(), '.config', 'langchain-mcp');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 export const DEFAULT_API_URL = process.env.LANGCHAIN_MCP_API_URL || 'https://api.langchain-mcp.xyz';
+export const WEBSITE_URL = process.env.LANGCHAIN_MCP_WEBSITE_URL || 'https://langchain-mcp.xyz';
 
 export function loadConfig(): UserConfig | null {
   try {

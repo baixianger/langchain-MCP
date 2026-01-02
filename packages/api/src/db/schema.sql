@@ -1,8 +1,7 @@
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,                    -- UUID
-  github_id INTEGER UNIQUE,               -- GitHub user ID (optional)
-  google_id TEXT UNIQUE,                  -- Google user ID (optional)
+  google_id TEXT UNIQUE,                  -- Google user ID
   email TEXT,
   name TEXT,
   avatar_url TEXT,
