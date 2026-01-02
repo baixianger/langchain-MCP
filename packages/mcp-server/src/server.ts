@@ -76,7 +76,7 @@ export function createServer(): McpServer {
 
   const server = new McpServer({
     name: 'langchain-mcp',
-    version: '1.2.2',
+    version: '1.2.5',
   });
 
   // search_docs

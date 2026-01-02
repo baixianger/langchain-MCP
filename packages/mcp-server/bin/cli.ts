@@ -3,10 +3,17 @@
 import { Command } from 'commander';
 import http from 'http';
 import open from 'open';
+import { readFileSync } from 'fs';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { loadConfig, saveConfig, deleteConfig, getConfigPath, DEFAULT_API_URL, WEBSITE_URL } from '../src/config.js';
 import { APIClient } from '../src/api-client.js';
 import { createServer } from '../src/server.js';
+
+// Get version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
 
 // ASCII Art Banner - Generated with oh-my-logo (shade style)
 function printBanner() {
@@ -35,7 +42,7 @@ const program = new Command();
 program
   .name('langchain-mcp')
   .description('CLI for LangChain MCP server')
-  .version('1.0.0');
+  .version(pkg.version);
 
 /**
  * Default action - start MCP server (when no command given)
