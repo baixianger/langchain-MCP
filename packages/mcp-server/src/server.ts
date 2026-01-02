@@ -76,13 +76,13 @@ export function createServer(): McpServer {
 
   const server = new McpServer({
     name: 'langchain-mcp',
-    version: '1.2.1',
+    version: '1.2.2',
   });
 
   // search_docs
   server.tool(
     'search_docs',
-    'Search LangChain documentation. Returns relevant docs based on your query.',
+    'Search documentation, references, and tutorials about LangChain, LangGraph, LangSmith, and DeepAgents.',
     searchDocsSchema.shape,
     async (input) => {
       if (!apiClient) {

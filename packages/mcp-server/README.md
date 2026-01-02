@@ -37,7 +37,7 @@ langchain-mcp logout   # Logout
 
 | Tool | Description |
 |------|-------------|
-| `search_langchain_docs` | Search LangChain documentation |
+| `search_docs` | Search documentation, references, and tutorials about LangChain, LangGraph, LangSmith, and DeepAgents |
 | `search_langchain_code` | Search LangChain source code |
 | `search_langgraph_code` | Search LangGraph source code |
 | `search_deepagent_code` | Search DeepAgent source code |
