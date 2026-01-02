@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LangChain MCP - Vibe Coding with AI</title>
+  <link rel="icon" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@rive-app/canvas@2.10.0"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F6F4EE;
+      color: #1A1A1A;
+      min-height: 100vh;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 40px;
+      background: rgba(246, 244, 238, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo span {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 2px solid #1A1A1A;
+      box-shadow: 3px 3px 0 #1A1A1A;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav a {
+      font-weight: 400;
+      font-size: 1rem;
+      color: #202020;
+      transition: opacity 0.2s;
+    }
+
+    .nav a:hover {
+      opacity: 0.6;
+    }
+
+    .nav-btn {
+      background: #1A1A1A;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    .nav-btn:hover {
+      opacity: 0.85;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-video {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem;
+      font-weight: 900;
+      line-height: 1.1;
+      max-width: 700px;
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.35rem;
+      color: #1A1A1A;
+      max-width: 600px;
+      margin-bottom: 40px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .hero-cta-container {
+      min-height: 280px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      z-index: 10;
+      position: relative;
+    }
+
+    .hero-btn-wrapper {
+      position: absolute;
+      top: 0;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .hero-btn-wrapper #rive-canvas {
+      display: block;
+      width: 360px;
+      height: 200px;
+    }
+
+    .hero-btn-wrapper.hidden {
+      display: none;
+    }
+
+    /* Install Panel - Brutalist Retro Style */
+    .install-panel {
+      position: absolute;
+      top: 0;
+      background: #FAF7F0;
+      border: 3px solid #1A1A1A;
+      border-radius: 0;
+      max-width: 480px;
+      display: none;
+      position: relative;
+      box-shadow: 6px 6px 0 #1A1A1A;
+    }
+
+    .install-panel.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mac-titlebar {
+      background: #FAF7F0;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid #1A1A1A;
+    }
+
+    .mac-title-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1A1A1A;
+      letter-spacing: 0.5px;
+    }
+
+    .mac-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mac-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #1A1A1A;
+      background: #FAF7F0;
+    }
+
+    .copy-btn {
+      background: #1A1A1A;
+      border: 2px solid #1A1A1A;
+      color: #FAF7F0;
+      cursor: pointer;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover {
+      background: #FAF7F0;
+      color: #1A1A1A;
+    }
+
+    .copy-btn.copied {
+      background: #1A1A1A;
+      color: #4ADE80;
+    }
+
+    .terminal {
+      background: #FAF7F0;
+      padding: 16px;
+      position: relative;
+    }
+
+    .terminal pre {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      color: #1A1A1A;
+      font-size: 0.95rem;
+      font-weight: 500;
+      background: #fff;
+      padding: 16px 20px;
+      padding-right: 50px;
+      border: 2px solid #1A1A1A;
+      margin: 0;
+      line-height: 1.8;
+      overflow-x: auto;
+      text-align: left;
+    }
+
+    .terminal .line-num {
+      color: #999;
+      margin-right: 0.5em;
+      user-select: none;
+    }
+
+    .copy-icon {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .copy-icon:hover {
+      opacity: 1;
+    }
+
+    .copy-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: #1A1A1A;
+    }
+
+    .copy-icon.copied svg {
+      stroke: #4ADE80;
+    }
+
+    /* Sections */
+    .section {
+      padding: 80px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 1.1rem;
+      margin-bottom: 48px;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature {
+      background: #fff;
+      border: 2px solid #1A1A1A;
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    .feature::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      right: -6px;
+      bottom: -6px;
+      border-radius: 16px;
+      background-image: radial-gradient(circle, #1A1A1A 1px, transparent 1px);
+      background-size: 4px 4px;
+      z-index: -1;
+    }
+
+    .feature svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 16px;
+      stroke: #1A1A1A;
+    }
+
+    .feature h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature p {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* Steps */
+    .steps-section {
+      background: #1A1A1A;
+      color: #fff;
+      padding: 80px 24px;
+      margin-top: 40px;
+    }
+
+    .steps-section .section-title {
+      color: #fff;
+    }
+
+    .steps-section .section-subtitle {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-number {
+      width: 48px;
+      height: 48px;
+      background: #5B9EE1;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin: 0 auto 16px;
+    }
+
+    .step h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .step code {
+      display: inline-block;
+      margin-top: 8px;
+      background: rgba(255,255,255,0.1);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #4ADE80;
+    }
+
+    /* Install Methods */
+    .install-methods {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .install-method {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .install-method h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .install-method p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+    }
+
+    .install-method pre {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+
+    .install-method pre code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      color: #4ADE80;
+      line-height: 1.6;
+    }
+
+    .config-path {
+      font-size: 0.8rem !important;
+      color: rgba(255,255,255,0.5) !important;
+      margin-top: 8px;
+    }
+
+    .config-path code {
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .install-methods {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Footer */
+    .footer {
+      background: #1A1A1A;
+      color: rgba(255,255,255,0.7);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .footer-brand img {
+      height: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 12px 20px;
+      }
+
+      .nav a:not(.nav-btn) {
+        display: none;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.1rem;
+      }
+
+      .features, .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <span>LangChain MCP</span>
+      </a>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/baixianger/langchain-mcp">GitHub</a>
+        <a href="https://github.com/sponsors/baixianger">Support</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <!-- Background Video -->
+    <video class="hero-bg-video" autoplay loop muted playsinline webkit-playsinline>
+      <source src="/brids_walking.mov" type="video/quicktime">
+      <source src="/brids_walking.webm" type="video/webm">
+    </video>
+
+    <h1 class="hero-title">Vibe Coding with LangChain knowledge</h1>
+    <p class="hero-subtitle">Give your AI assistant the complete knowledge of LangChain, LangGraph & LangSmith documentation.</p>
+
+    <div class="hero-cta-container">
+      <div class="hero-btn-wrapper" id="heroBtnWrapper" onclick="showInstall()">
+        <canvas id="rive-canvas" width="720" height="400"></canvas>
+      </div>
+
+      <div class="install-panel" id="installPanel">
+        <div class="mac-titlebar">
+          <span class="mac-title-text">INSTALL</span>
+          <div class="mac-dots">
+            <span class="mac-dot"></span>
+            <span class="mac-dot"></span>
+            <span class="mac-dot"></span>
+          </div>
+        </div>
+        <div class="terminal">
+          <pre id="installCode"><span class="line-num">1</span> npm i -g langchain-mcp
+<span class="line-num">2</span> langchain-mcp login
+<span class="line-num">3</span> claude mcp add langchain-mcp -- npx langchain-mcp</pre>
+          <button class="copy-icon" onclick="copyAll(this)" title="Copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <h2 class="section-title">Features</h2>
+    <p class="section-subtitle">Everything you need to build LangChain apps faster</p>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <h3>Semantic Search</h3>
+        <p>Natural language queries across all LangChain ecosystem docs</p>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <h3>Code Examples</h3>
+        <p>Python & JavaScript snippets from official repositories</p>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <h3>MCP Protocol</h3>
+        <p>Works with Claude, Cursor, and any MCP-compatible AI</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="steps-section" id="install">
+    <h2 class="section-title">Installation</h2>
+    <p class="section-subtitle">Works with Claude Code, Claude Desktop, Cursor and any MCP-compatible client</p>
+
+    <div class="install-methods">
+      <div class="install-method">
+        <h3>Claude Code (CLI)</h3>
+        <pre><code>npm i -g langchain-mcp
+langchain-mcp login
+claude mcp add langchain-mcp -- npx langchain-mcp</code></pre>
+      </div>
+
+      <div class="install-method">
+        <h3>Claude Desktop / Cursor / Other</h3>
+        <p>Add to your MCP config file:</p>
+        <pre><code>{
+  "mcpServers": {
+    "langchain-mcp": {
+      "command": "npx",
+      "args": ["langchain-mcp"]
+    }
+  }
+}</code></pre>
+        <p class="config-path">
+          macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code><br>
+          Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span>LangChain MCP</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/baixianger/langchain-mcp">GitHub</a>
+        <a href="https://github.com/sponsors/baixianger">Sponsor</a>
+        <a href="https://github.com/baixianger">@baixianger</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Rive animation
+    let riveInstance;
+    let inputs = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('rive-canvas');
+      const wrapper = document.getElementById('heroBtnWrapper');
+
+      riveInstance = new rive.Rive({
+        src: '/cat-paw.riv',
+        canvas: canvas,
+        autoplay: true,
+        stateMachines: 'Motion',
+        onLoad: () => {
+          riveInstance.resizeDrawingSurfaceToCanvas();
+          // Get state machine inputs
+          const allInputs = riveInstance.stateMachineInputs('Motion');
+          if (allInputs) {
+            allInputs.forEach(input => {
+              inputs[input.name] = input;
+            });
+          }
+        },
+      });
+
+      // Track mouse position and trigger hover inputs
+      wrapper.addEventListener('mousemove', (e) => {
+        if (!riveInstance || !inputs.isHovercenter) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
+
+        // Reset all inputs
+        if (inputs.isHoverLeft) inputs.isHoverLeft.value = false;
+        if (inputs.isHoverLeft2) inputs.isHoverLeft2.value = false;
+        if (inputs.isHovercenter) inputs.isHovercenter.value = false;
+        if (inputs.isHoverRight) inputs.isHoverRight.value = false;
+        if (inputs.isHoverRight2) inputs.isHoverRight2.value = false;
+
+        // Set input based on position (divide into 5 zones)
+        const zone = Math.floor(x / (width / 5));
+        if (zone === 0 && inputs.isHoverLeft2) inputs.isHoverLeft2.value = true;
+        else if (zone === 1 && inputs.isHoverLeft) inputs.isHoverLeft.value = true;
+        else if (zone === 2 && inputs.isHovercenter) inputs.isHovercenter.value = true;
+        else if (zone === 3 && inputs.isHoverRight) inputs.isHoverRight.value = true;
+        else if (zone === 4 && inputs.isHoverRight2) inputs.isHoverRight2.value = true;
+      });
+
+      wrapper.addEventListener('mouseleave', () => {
+        // Reset all inputs on leave
+        if (inputs.isHoverLeft) inputs.isHoverLeft.value = false;
+        if (inputs.isHoverLeft2) inputs.isHoverLeft2.value = false;
+        if (inputs.isHovercenter) inputs.isHovercenter.value = false;
+        if (inputs.isHoverRight) inputs.isHoverRight.value = false;
+        if (inputs.isHoverRight2) inputs.isHoverRight2.value = false;
+      });
+    });
+
+    function showInstall() {
+      document.getElementById('heroBtnWrapper').classList.add('hidden');
+      document.getElementById('installPanel').classList.add('show');
+    }
+
+    function copyAll(btn) {
+      const commands = `npm i -g langchain-mcp
+langchain-mcp login
+claude mcp add langchain-mcp -- npx langchain-mcp`;
+      navigator.clipboard.writeText(commands);
+
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

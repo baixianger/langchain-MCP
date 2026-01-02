@@ -1,61 +1,129 @@
-# LangChain RAG MCP Server
+# LangChain MCP
 
-MCP server for RAG over LangChain documentation and source code.
+MCP server for searching LangChain documentation and source code.
 
-## Setup
+## Architecture
 
-```bash
-# Install
-npm install
-
-# Start ChromaDB (requires Python)
-pip install chromadb
-chroma run --path ./data/chroma
-
-# Configure (copy and edit)
-cp .env.example .env
+```
+┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
+│  Claude Desktop │────▶│  @langchain-mcp/server│────▶│   API Server    │
+│                 │     │  (npm package)        │     │   (VPS)         │
+└─────────────────┘     └──────────────────────┘     └─────────────────┘
 ```
 
-## Usage
+## Project Structure
+
+```
+langchain-MCP/
+├── config/
+│   └── settings.json           # Shared configuration
+├── packages/
+│   ├── ingest/                 # Python - Data ingestion (uv)
+│   ├── api/                    # TypeScript - API server (Express)
+│   ├── mcp-server/             # TypeScript - MCP client (npm publish)
+│   └── mcp-server-local/       # TypeScript - Local MCP server (dev)
+```
+
+## For Users
+
+### Installation
 
 ```bash
-# Ingest (test with docs first)
-npm run ingest docs
+npm install -g @langchain-mcp/server
+langchain-mcp login
+```
 
-# Start MCP server
+### Claude Desktop Configuration
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "langchain-mcp": {
+      "command": "npx",
+      "args": ["@langchain-mcp/server"]
+    }
+  }
+}
+```
+
+### CLI Commands
+
+```bash
+langchain-mcp login      # Login via GitHub
+langchain-mcp status     # Check usage and credits
+langchain-mcp logout     # Logout
+```
+
+## For Developers
+
+### 1. Ingest Data
+
+```bash
+cd packages/ingest
+uv sync
+uv run ingest --list     # List repos
+uv run ingest docs       # Ingest docs only
+uv run ingest            # Ingest all
+```
+
+### 2. Run API Server
+
+```bash
+cd packages/api
+npm install
 npm run dev
 ```
 
+### 3. Test Local MCP Server
+
+```bash
+cd packages/mcp-server-local
+npm install
+npm run dev
+```
+
+## Configuration
+
+All settings in `config/settings.json`:
+
+```json
+{
+  "embedding": {
+    "provider": "openrouter",
+    "model": "qwen/qwen3-embedding-8b"
+  },
+  "chromadb": {
+    "path": "./data/chroma"
+  },
+  "chunking": {
+    "chunk_size": 1500,
+    "chunk_overlap": 150
+  },
+  "repos": { ... }
+}
+```
+
+### Embedding Providers
+
+Supported: `sentence-transformer`, `openai`, `cohere`, `google`, `ollama`, `openrouter`
+
+See: https://docs.trychroma.com/integrations/chroma-integrations
+
 ## MCP Tools
 
-- `search_langchain_docs` - Search documentation
-- `search_langchain_code` - Search source code
-- `search_langchain` - Search both (hybrid)
+| Tool | Description |
+|------|-------------|
+| `search_langchain_docs` | Search documentation |
+| `search_langchain_code` | Search source code |
+| `search_langchain` | Hybrid search (docs + code) |
 
-## Collections
+## Pricing
 
-Filter by: `docs`, `langchain`, `langchainjs`, `langgraph`, `langgraphjs`, `deepagents`, `deepagentsjs`
+- **Free credits**: $5 per new user
+- **Cost**: ~$0.03 per search (~150 free searches)
 
-## Embedding Providers
+## License
 
-Set `EMBEDDING_PROVIDER` in `.env`:
-
-**ChromaDB integrations** (install only what you need):
-
-| Provider | Package | Default Model |
-|----------|---------|---------------|
-| `default` | @chroma-core/default-embed | all-MiniLM-L6-v2 |
-| `sentence-transformer` | @chroma-core/sentence-transformer | all-MiniLM-L6-v2 |
-| `openai` | @chroma-core/openai | text-embedding-3-small |
-| `cohere` | @chroma-core/cohere | embed-english-v3.0 |
-| `jina` | @chroma-core/jina | jina-embeddings-v3 |
-| `voyageai` | @chroma-core/voyageai | voyage-2 |
-| `ollama` | @chroma-core/ollama | nomic-embed-text |
-| `google-genai` | @chroma-core/google-genai | text-embedding-004 |
-| `huggingface` | @chroma-core/huggingface | sentence-transformers/all-MiniLM-L6-v2 |
-
-**External API** (default):
-
-| Provider | API Key | Default Model |
-|----------|---------|---------------|
-| `openrouter` | OPENROUTER_API_KEY | qwen/qwen3-embedding-8b |
+MIT

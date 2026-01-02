@@ -1,0 +1,98 @@
+{
+  "embedding": {
+    "provider": "openrouter",
+    "model": "qwen/qwen3-embedding-8b"
+  },
+  "chromadb": {
+    "path": "./data/chroma"
+  },
+  "chunking": {
+    "chunk_size": 1500,
+    "chunk_overlap": 150
+  },
+  "repos": {
+    "docs": {
+      "owner": "langchain-ai",
+      "repo": "docs",
+      "branch": "main",
+      "include": [
+        "src/langsmith/**",
+        "src/oss/langchain/**",
+        "src/oss/langgraph/**",
+        "src/oss/deepagents/**",
+        "src/oss/concepts/**",
+        "src/oss/integrations/**",
+        "src/oss/javascript/**",
+        "src/oss/python/**",
+        "src/oss/contributing/**",
+        "src/oss/*.mdx",
+        "src/*.mdx"
+      ],
+      "exclude": ["**/images/**", "**/snippets/**", "**/preview/**", "**/errors/**"]
+    },
+    "langchain": {
+      "owner": "langchain-ai",
+      "repo": "langchain",
+      "branch": "master",
+      "language": "python",
+      "include": [
+        "libs/core/langchain_core/**",
+        "libs/langchain/langchain/**",
+        "libs/text-splitters/**"
+      ],
+      "exclude": ["**/tests/**", "**/__pycache__/**", "**/scripts/**"]
+    },
+    "langchainjs": {
+      "owner": "langchain-ai",
+      "repo": "langchainjs",
+      "branch": "main",
+      "language": "javascript",
+      "include": [
+        "libs/langchain-core/src/**",
+        "libs/langchain/src/**",
+        "libs/langchain-community/src/**",
+        "libs/langchain-textsplitters/src/**",
+        "examples/**"
+      ],
+      "exclude": ["**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
+    },
+    "langgraph": {
+      "owner": "langchain-ai",
+      "repo": "langgraph",
+      "branch": "main",
+      "language": "python",
+      "include": [
+        "libs/langgraph/langgraph/**",
+        "libs/prebuilt/**",
+        "libs/checkpoint/**",
+        "docs/**",
+        "examples/**"
+      ],
+      "exclude": ["**/tests/**", "**/__pycache__/**", "**/bench/**"]
+    },
+    "langgraphjs": {
+      "owner": "langchain-ai",
+      "repo": "langgraphjs",
+      "branch": "main",
+      "language": "javascript",
+      "include": ["libs/*/src/**", "docs/**", "examples/**"],
+      "exclude": ["**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
+    },
+    "deepagents": {
+      "owner": "langchain-ai",
+      "repo": "deepagents",
+      "branch": "main",
+      "language": "python",
+      "include": ["libs/deepagents/**", "libs/acp/**", "libs/harbor/**"],
+      "exclude": ["**/tests/**", "**/__pycache__/**"]
+    },
+    "deepagentsjs": {
+      "owner": "langchain-ai",
+      "repo": "deepagentsjs",
+      "branch": "main",
+      "language": "javascript",
+      "include": ["src/**", "examples/**"],
+      "exclude": ["**/dist/**", "**/*.test.ts", "**/*.spec.ts"]
+    }
+  }
+}

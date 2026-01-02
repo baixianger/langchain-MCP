@@ -1,0 +1,8 @@
+name = "github-proxy"
+main = "github-proxy.js"
+compatibility_date = "2024-01-01"
+
+# You can add a custom domain later
+# routes = [
+#   { pattern = "github-proxy.langchain-mcp.xyz/*", zone_name = "langchain-mcp.xyz" }
+# ]
