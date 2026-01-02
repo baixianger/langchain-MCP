@@ -5,25 +5,17 @@ import { APIClient, SearchResult } from './api-client.js';
 
 // Schemas
 const searchDocsSchema = z.object({
-  query: z.string().describe('Search query'),
-  limit: z.number().int().min(1).max(20).default(5).describe('Max results (1-20)'),
-  product: z.enum(['langsmith', 'langchain', 'langgraph', 'deepagents', 'oss']).optional().describe('Filter by product'),
-  language: z.enum(['python', 'javascript']).optional().describe('Filter by language'),
+  query: z.string().describe('Natural language search query'),
+  limit: z.number().int().min(1).max(20).default(5).describe('Number of results to return (1-20)'),
+  product: z.enum(['langsmith', 'langchain', 'langgraph']).optional().describe('Filter by product: langchain, langgraph, or langsmith'),
+  language: z.enum(['python', 'javascript']).optional().describe('Filter by language: python or javascript'),
 });
 
 const searchCodeSchema = z.object({
-  query: z.string().describe('Search query'),
-  limit: z.number().int().min(1).max(20).default(5).describe('Max results (1-20)'),
-  product: z.enum(['langchain', 'langgraph', 'deepagents']).optional().describe('Filter by product'),
-  language: z.enum(['python', 'javascript']).optional().describe('Filter by language'),
-  code_type: z.enum(['function', 'class', 'module']).optional().describe('Filter by code type'),
-});
-
-const searchHybridSchema = z.object({
-  query: z.string().describe('Search query'),
-  limit: z.number().int().min(1).max(20).default(10).describe('Max results (1-20)'),
-  include_docs: z.boolean().default(true).describe('Include documentation'),
-  include_code: z.boolean().default(true).describe('Include source code'),
+  query: z.string().describe('Natural language search query'),
+  limit: z.number().int().min(1).max(20).default(5).describe('Number of results to return (1-20)'),
+  product: z.enum(['langchain', 'langgraph']).optional().describe('Filter by product: langchain or langgraph'),
+  language: z.enum(['python', 'javascript']).optional().describe('Filter by language: python or javascript'),
 });
 
 function formatDocsResults(results: SearchResult[]): string {
@@ -92,7 +84,7 @@ export function createServer(): McpServer {
   // search_langchain_docs
   server.tool(
     'search_langchain_docs',
-    'Search LangChain documentation. Returns relevant docs based on your query.',
+    'Search LangChain, LangGraph & LangSmith documentation. Find guides, tutorials, API references and concepts. Use product parameter to filter by langchain, langgraph, or langsmith. Use language parameter to filter by python or javascript.',
     searchDocsSchema.shape,
     async (input) => {
       if (!apiClient) {
@@ -131,49 +123,6 @@ export function createServer(): McpServer {
         const response = await apiClient.searchCode(params);
 
         const formatted = formatCodeResults(response.results);
-        const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;
-
-        return {
-          content: [{ type: 'text', text: formatted + footer }],
-        };
-      } catch (error) {
-        return {
-          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
-          isError: true,
-        };
-      }
-    }
-  );
-
-  // search_langchain
-  server.tool(
-    'search_langchain',
-    'Hybrid search across LangChain docs and code.',
-    searchHybridSchema.shape,
-    async (input) => {
-      if (!apiClient) {
-        return { content: [{ type: 'text', text: LOGIN_MESSAGE }] };
-      }
-      try {
-        const params = searchHybridSchema.parse(input);
-        const response = await apiClient.searchHybrid(params);
-
-        // Format mixed results
-        const formatted = response.results.map((r, i) => {
-          const meta = r.metadata;
-          const isCode = r.repo !== 'docs';
-          const header = `## ${i + 1}. [${isCode ? 'Code' : 'Docs'}] ${meta.filePath}`;
-
-          if (isCode) {
-            const lang = meta.language === 'python' ? 'python' : 'typescript';
-            const content = r.content.length > 1500 ? r.content.slice(0, 1500) + '...' : r.content;
-            return `${header}\n\n\`\`\`${lang}\n${content}\n\`\`\``;
-          } else {
-            const content = r.content.length > 1500 ? r.content.slice(0, 1500) + '...' : r.content;
-            return `${header}\n\n${content}`;
-          }
-        }).join('\n\n---\n\n');
-
         const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;
 
         return {

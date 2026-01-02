@@ -94,6 +94,67 @@
       opacity: 0.85;
     }
 
+    /* Hamburger Menu */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+      z-index: 101;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: #1A1A1A;
+      transition: all 0.3s;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* Mobile Menu Overlay */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(246, 244, 238, 0.98);
+      z-index: 99;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .mobile-menu.active {
+      display: flex;
+    }
+
+    .mobile-menu a {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1A1A1A;
+      padding: 12px 24px;
+      transition: opacity 0.2s;
+    }
+
+    .mobile-menu a:hover {
+      opacity: 0.6;
+    }
+
     /* Hero */
     .hero {
       min-height: 100vh;
@@ -249,14 +310,14 @@
     .terminal pre {
       font-family: 'SF Mono', Monaco, Consolas, monospace;
       color: #1A1A1A;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
       font-weight: 500;
       background: #fff;
-      padding: 16px 20px;
+      padding: 14px 18px;
       padding-right: 50px;
       border: 2px solid #1A1A1A;
       margin: 0;
-      line-height: 1.8;
+      line-height: 1.7;
       overflow-x: auto;
       text-align: left;
     }
@@ -425,67 +486,173 @@
       color: #4ADE80;
     }
 
-    /* Install Methods */
-    .install-methods {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 32px;
-      max-width: 900px;
+    /* Install Window - Inverted colors for dark bg */
+    .install-window {
+      max-width: 560px;
       margin: 0 auto;
+      background: #FAF7F0;
+      border: 3px solid #FAF7F0;
+      box-shadow: 6px 6px 0 rgba(255,255,255,0.2);
     }
 
-    .install-method {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 24px;
+    .install-titlebar {
+      background: #FAF7F0;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid #1A1A1A;
     }
 
-    .install-method h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: #fff;
-    }
-
-    .install-method p {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 12px;
-    }
-
-    .install-method pre {
-      background: rgba(0,0,0,0.3);
-      border-radius: 8px;
-      padding: 16px;
-      overflow-x: auto;
-      margin-bottom: 12px;
-    }
-
-    .install-method pre code {
-      font-family: 'SF Mono', Monaco, Consolas, monospace;
-      font-size: 0.85rem;
-      color: #4ADE80;
-      line-height: 1.6;
-    }
-
-    .config-path {
-      font-size: 0.8rem !important;
-      color: rgba(255,255,255,0.5) !important;
-      margin-top: 8px;
-    }
-
-    .config-path code {
-      background: rgba(255,255,255,0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
+    .install-titlebar .mac-title-text {
+      font-family: 'DM Sans', sans-serif;
       font-size: 0.75rem;
+      font-weight: 600;
+      color: #1A1A1A;
+      letter-spacing: 0.5px;
     }
 
-    @media (max-width: 768px) {
-      .install-methods {
-        grid-template-columns: 1fr;
-      }
+    .install-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .install-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #1A1A1A;
+      background: #FAF7F0;
+    }
+
+    /* Install Tabs */
+    .install-tabs {
+      display: flex;
+      background: #FAF7F0;
+      padding: 0 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .install-tab {
+      padding: 8px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #666;
+      background: #FAF7F0;
+      border: 2px solid #1A1A1A;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      margin-right: -2px;
+      margin-bottom: -2px;
+    }
+
+    .install-tab:hover {
+      background: rgba(26,26,26,0.05);
+    }
+
+    .install-tab.active {
+      background: #fff;
+      color: #1A1A1A;
+    }
+
+    /* Install Content */
+    .install-content {
+      background: #FAF7F0;
+      padding: 14px;
+    }
+
+    .install-tabs + .install-content {
+      padding: 0 0 14px 0;
+      margin: 0 14px;
+    }
+
+    .install-tabs + .install-content .install-pane pre {
+      border-radius: 0 6px 6px 6px;
+    }
+
+    .install-pane {
+      display: none;
+    }
+
+    .install-pane.active {
+      display: block;
+    }
+
+    .install-pane pre {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      color: #1A1A1A;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: #fff;
+      padding: 12px 16px;
+      border: 2px solid #1A1A1A;
+      margin: 0;
+      line-height: 1.6;
+      overflow-x: auto;
+      text-align: left;
+      position: relative;
+    }
+
+    .install-pane .line-num {
+      color: #999;
+      margin-right: 0.5em;
+      user-select: none;
+    }
+
+    .install-pane .copy-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .install-pane .copy-icon:hover {
+      opacity: 1;
+    }
+
+    .install-pane .copy-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: #1A1A1A;
+    }
+
+    .install-pane .copy-icon.copied svg {
+      stroke: #4ADE80;
+    }
+
+    .install-pane p {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .install-pane p code {
+      background: rgba(26,26,26,0.08);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+    }
+
+    .install-step-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     /* Footer */
@@ -529,31 +696,228 @@
       color: #fff;
     }
 
+    /* Ko-fi Modal */
+    .kofi-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kofi-modal.active {
+      display: flex;
+    }
+
+    .kofi-modal-content {
+      background: #f9f9f9;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kofi-modal-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      z-index: 1001;
+      background: #f9f9f9;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kofi-modal-close:hover {
+      color: #000;
+    }
+
+    .kofi-modal iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header {
-        padding: 12px 20px;
+        padding: 12px 16px;
       }
 
-      .nav a:not(.nav-btn) {
+      .nav {
         display: none;
       }
 
+      .hamburger {
+        display: flex;
+      }
+
+      .hero {
+        padding: 100px 16px 40px;
+      }
+
       .hero-title {
-        font-size: 2.5rem;
+        font-size: 2rem;
       }
 
       .hero-subtitle {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 30px;
+      }
+
+      .hero-cta-container {
+        min-height: 220px;
+      }
+
+      .hero-btn-wrapper #rive-canvas {
+        width: 280px;
+        height: 160px;
+      }
+
+      /* Hero Install Panel Mobile */
+      .install-panel {
+        max-width: 100%;
+        margin: 0 8px;
+      }
+
+      .install-panel .terminal pre {
+        font-size: 0.65rem;
+        padding: 12px 14px;
+        padding-right: 40px;
+        line-height: 1.6;
+        overflow-x: auto;
+      }
+
+      .mac-titlebar {
+        padding: 8px 10px;
+      }
+
+      .mac-title-text {
+        font-size: 0.75rem;
+      }
+
+      .mac-dot {
+        width: 10px;
+        height: 10px;
+      }
+
+      /* Features Mobile */
+      .section {
+        padding: 60px 16px;
+      }
+
+      .section-title {
+        font-size: 2rem;
       }
 
       .features, .steps {
         grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .feature {
+        padding: 20px 16px;
+      }
+
+      /* Install Section Mobile */
+      .steps-section {
+        padding: 60px 16px;
+      }
+
+      .install-window {
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .install-tabs {
+        flex-wrap: nowrap;
+      }
+
+      .install-tab {
+        padding: 8px 8px;
+        font-size: 0.65rem;
+        white-space: nowrap;
+      }
+
+      .install-content {
+        padding: 10px;
+      }
+
+      .install-pane pre {
+        font-size: 0.6rem;
+        padding: 10px 12px;
+        line-height: 1.5;
+        overflow-x: auto;
+      }
+
+      .install-pane .line-num {
+        margin-right: 0.3em;
+      }
+
+      .install-pane p {
+        font-size: 0.6rem;
+      }
+
+      .install-pane p code {
+        font-size: 0.55rem;
+        word-break: break-all;
+      }
+
+      .install-titlebar {
+        padding: 6px 10px;
+      }
+
+      .install-titlebar .mac-title-text {
+        font-size: 0.65rem;
+      }
+
+      .install-dots span {
+        width: 10px;
+        height: 10px;
+      }
+
+      /* Footer Mobile */
+      .footer {
+        padding: 24px 16px;
       }
 
       .footer-inner {
         flex-direction: column;
         gap: 16px;
+      }
+
+      .footer-links {
+        gap: 16px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Small phones */
+    @media (max-width: 380px) {
+      .hero-title {
+        font-size: 1.75rem;
+      }
+
+      .install-tab {
+        font-size: 0.55rem;
+        padding: 6px 4px;
+      }
+
+      .install-pane pre {
+        font-size: 0.55rem;
       }
     }
   </style>
@@ -569,10 +933,31 @@
         <a href="#features">Features</a>
         <a href="#install">Install</a>
         <a href="https://github.com/baixianger/langchain-mcp">GitHub</a>
-        <a href="https://github.com/sponsors/baixianger">Support</a>
+        <a href="#" onclick="openKofiModal(); return false;">Support</a>
       </nav>
+      <div class="hamburger" onclick="toggleMobileMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features" onclick="toggleMobileMenu()">Features</a>
+    <a href="#install" onclick="toggleMobileMenu()">Install</a>
+    <a href="https://github.com/baixianger/langchain-mcp" onclick="toggleMobileMenu()">GitHub</a>
+    <a href="#" onclick="toggleMobileMenu(); openKofiModal(); return false;">Support</a>
+  </div>
+
+  <!-- Ko-fi Modal -->
+  <div class="kofi-modal" id="kofiModal" onclick="closeKofiModal()">
+    <div class="kofi-modal-content" onclick="event.stopPropagation()">
+      <span class="kofi-modal-close" onclick="closeKofiModal()">&times;</span>
+      <iframe id='kofiframe' src='https://ko-fi.com/baixianger/?hidefeed=true&widget=true&embed=true&preview=true' title='Support'></iframe>
+    </div>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
@@ -583,7 +968,7 @@
     </video>
 
     <h1 class="hero-title">Vibe Coding with LangChain knowledge</h1>
-    <p class="hero-subtitle">Give your AI assistant the complete knowledge of LangChain, LangGraph & LangSmith documentation.</p>
+    <p class="hero-subtitle">Give your AI assistant the complete knowledge of LangChain, LangGraph & LangSmith.</p>
 
     <div class="hero-cta-container">
       <div class="hero-btn-wrapper" id="heroBtnWrapper" onclick="showInstall()">
@@ -633,7 +1018,7 @@
           <polyline points="8 6 2 12 8 18"></polyline>
         </svg>
         <h3>Code Examples</h3>
-        <p>Python & JavaScript snippets from official repositories</p>
+        <p>Production-ready code with industry best practices</p>
       </div>
       <div class="feature">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -650,29 +1035,54 @@
     <h2 class="section-title">Installation</h2>
     <p class="section-subtitle">Works with Claude Code, Claude Desktop, Cursor and any MCP-compatible client</p>
 
-    <div class="install-methods">
-      <div class="install-method">
-        <h3>Claude Code (CLI)</h3>
-        <pre><code>npm i -g langchain-mcp
-langchain-mcp login
-claude mcp add langchain-mcp -- npx langchain-mcp</code></pre>
+    <div class="install-window">
+      <div class="install-titlebar">
+        <span class="mac-title-text">INSTALL</span>
+        <div class="install-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-
-      <div class="install-method">
-        <h3>Claude Desktop / Cursor / Other</h3>
-        <p>Add to your MCP config file:</p>
-        <pre><code>{
+      <div class="install-content">
+        <div class="install-step-label">Step 1: Install CLI</div>
+        <div class="install-pane active">
+          <pre><span class="line-num">$</span> npm i -g langchain-mcp
+<span class="line-num">$</span> langchain-mcp login<button class="copy-icon" onclick="copyStep1(this)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
+        </div>
+        <div class="install-step-label" style="margin-top: 16px;">Step 2: Configure Client</div>
+      </div>
+      <div class="install-tabs">
+        <button class="install-tab active" onclick="switchInstallTab(0)">Claude Code</button>
+        <button class="install-tab" onclick="switchInstallTab(1)">Claude Desktop</button>
+        <button class="install-tab" onclick="switchInstallTab(2)">Cursor</button>
+      </div>
+      <div class="install-content">
+        <div class="install-pane active" id="install-pane-0">
+          <pre><span class="line-num">$</span> claude mcp add langchain-mcp -- npx langchain-mcp<button class="copy-icon" onclick="copyInstall(this, 0)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
+        </div>
+        <div class="install-pane" id="install-pane-1">
+          <pre>{
   "mcpServers": {
     "langchain-mcp": {
       "command": "npx",
       "args": ["langchain-mcp"]
     }
   }
-}</code></pre>
-        <p class="config-path">
-          macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code><br>
-          Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code>
-        </p>
+}<button class="copy-icon" onclick="copyInstall(this, 1)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
+          <p>Config: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+        </div>
+        <div class="install-pane" id="install-pane-2">
+          <pre>{
+  "mcpServers": {
+    "langchain-mcp": {
+      "command": "npx",
+      "args": ["langchain-mcp"]
+    }
+  }
+}<button class="copy-icon" onclick="copyInstall(this, 2)" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></pre>
+          <p>Config: <code>~/.cursor/mcp.json</code></p>
+        </div>
       </div>
     </div>
   </section>
@@ -685,13 +1095,33 @@ claude mcp add langchain-mcp -- npx langchain-mcp</code></pre>
       </div>
       <div class="footer-links">
         <a href="https://github.com/baixianger/langchain-mcp">GitHub</a>
-        <a href="https://github.com/sponsors/baixianger">Sponsor</a>
+        <a href="https://ko-fi.com/T6T51RHLYR" target="_blank">Support</a>
         <a href="https://github.com/baixianger">@baixianger</a>
       </div>
     </div>
   </footer>
 
   <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const hamburger = document.querySelector('.hamburger');
+      menu.classList.toggle('active');
+      hamburger.classList.toggle('active');
+      document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+    }
+
+    // Ko-fi modal
+    function openKofiModal() {
+      document.getElementById('kofiModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeKofiModal() {
+      document.getElementById('kofiModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
     // Initialize Rive animation
     let riveInstance;
     let inputs = {};
@@ -761,6 +1191,66 @@ langchain-mcp login
 claude mcp add langchain-mcp -- npx langchain-mcp`;
       navigator.clipboard.writeText(commands);
 
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    // Step 1 copy function
+    function copyStep1(btn) {
+      const commands = `npm i -g langchain-mcp
+langchain-mcp login`;
+      navigator.clipboard.writeText(commands);
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    // Install section tabs (Step 2 only)
+    function switchInstallTab(index) {
+      // Update tabs
+      document.querySelectorAll('.install-tab').forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+      });
+      // Update panes (only those with IDs for Step 2)
+      document.querySelectorAll('[id^="install-pane-"]').forEach((pane, i) => {
+        pane.classList.toggle('active', i === index);
+        // Update border-radius based on which tab is active
+        const pre = pane.querySelector('pre');
+        if (pre) {
+          if (i === index) {
+            // First tab (index 0): no top-left radius since tab is above it
+            // Other tabs: add top-left radius since first tab isn't covering it
+            pre.style.borderRadius = (index === 0) ? '0 6px 6px 6px' : '6px';
+          }
+        }
+      });
+    }
+
+    const installCodes = [
+      `claude mcp add langchain-mcp -- npx langchain-mcp`,
+      `{
+  "mcpServers": {
+    "langchain-mcp": {
+      "command": "npx",
+      "args": ["langchain-mcp"]
+    }
+  }
+}`,
+      `{
+  "mcpServers": {
+    "langchain-mcp": {
+      "command": "npx",
+      "args": ["langchain-mcp"]
+    }
+  }
+}`
+    ];
+
+    function copyInstall(btn, index) {
+      navigator.clipboard.writeText(installCodes[index]);
       btn.classList.add('copied');
       setTimeout(() => {
         btn.classList.remove('copied');

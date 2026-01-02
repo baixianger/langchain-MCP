@@ -1,7 +1,7 @@
 {
   "name": "langchain-mcp",
-  "version": "1.0.1",
-  "description": "MCP server for LangChain documentation and code search",
+  "version": "1.0.5",
+  "description": "Give your AI assistant complete LangChain, LangGraph & LangSmith knowledge",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
