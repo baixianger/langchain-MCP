@@ -30,7 +30,7 @@
 
 ## Installation
 
-### Quick Start
+### Quick Start (Recommended)
 
 ```bash
 # Install globally
@@ -43,24 +43,18 @@ langchain-mcp login
 claude mcp add langchain-mcp -- npx langchain-mcp
 ```
 
-### Claude Desktop Configuration
+### Manual Configuration
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Add the following configuration to your client's config file:
 
-```json
-{
-  "mcpServers": {
-    "langchain-mcp": {
-      "command": "npx",
-      "args": ["langchain-mcp"]
-    }
-  }
-}
-```
+**Claude Desktop**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
 
-### Cursor Configuration
-
-Add to `~/.cursor/mcp.json`:
+**Cursor**
+- macOS/Linux: `~/.cursor/mcp.json`
+- Windows: `%USERPROFILE%\.cursor\mcp.json`
 
 ```json
 {
