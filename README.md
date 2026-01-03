@@ -88,7 +88,6 @@ langchain-mcp logout     # Logout and clear credentials
 ## Pricing
 
 - Free tier available for new users
-- Pay-as-you-go pricing for additional usage
 - Donation bonus for supporters
 
 ## Documentation
