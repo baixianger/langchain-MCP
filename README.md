@@ -87,11 +87,9 @@ langchain-mcp logout     # Logout and clear credentials
 
 ## Pricing
 
-- **Free Credits**: $5 per new user (~2000 searches)
-- **Cost**: $0.0005 per 1K tokens (~$0.0025 per search)
-- **Donation Bonus**: Donate $5, get $10 credits (200% match!)
-
-Visit [langchain-mcp.xyz](https://langchain-mcp.xyz) for more details.
+- Free tier available for new users
+- Pay-as-you-go pricing for additional usage
+- Donation bonus for supporters
 
 ## Documentation
 
