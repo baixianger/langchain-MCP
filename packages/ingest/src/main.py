@@ -14,7 +14,7 @@ load_dotenv(_project_root / ".env")
 from .config import load_config, get_collection_name, get_repos
 from .embeddings import get_embedding_function
 from .github import fetch_repo
-from .chunker import chunk_text, generate_chunk_id, extract_metadata
+from .chunker import chunk_text, generate_chunk_id, extract_metadata, detect_language
 from .recorder import load_records, check_should_process, batch_save_records
 
 
@@ -50,8 +50,8 @@ def ingest_repo(
     """
     stats = {"processed": 0, "skipped": 0, "chunks": 0, "errors": 0}
 
-    chunk_size = config["chunking"]["chunk_size"]
-    chunk_overlap = config["chunking"]["chunk_overlap"]
+    # Get chunking config (separate for docs and code)
+    chunking_config = config["chunking"]
     language = repo_config.get("language")
 
     # Fetch files from GitHub
@@ -72,36 +72,41 @@ def ingest_repo(
         content = file["content"]
         sha = file["sha"]
 
-        # Check if should process (using in-memory records)
-        if not force:
-            do_process, old_chunk_ids = check_should_process(records, path, sha)
-            if not do_process:
-                stats["skipped"] += 1
-                continue
-
-            # Delete old chunks if file changed
-            if old_chunk_ids:
-                try:
-                    collection.delete(ids=old_chunk_ids)
-                except Exception:
-                    pass
-
-        # Chunk the file
-        chunks = chunk_text(content, chunk_size, chunk_overlap)
+        # Chunk the file first (to get chunk_count for comparison)
+        lang = detect_language(path)
+        if lang in ("python", "javascript", "typescript"):
+            cfg = chunking_config["code"]
+        else:
+            cfg = chunking_config["docs"]
+        chunks = chunk_text(content, cfg["chunk_size"], cfg["chunk_overlap"], file_path=path)
         if not chunks:
             continue
 
+        chunk_count = len(chunks)
+
+        # Check if should process (using in-memory records)
+        if not force:
+            if not check_should_process(records, path, sha, chunk_count):
+                stats["skipped"] += 1
+                continue
+
+            # Delete old chunks by filePath metadata (if file existed before)
+            if path in records:
+                file_path_key = f"{repo_name}/{path}"
+                try:
+                    collection.delete(where={"filePath": file_path_key})
+                except Exception:
+                    pass
+
         # Prepare documents
         metadata = extract_metadata(repo_name, path, language)
-        chunk_ids = []
 
         ids = []
         documents = []
         metadatas = []
 
         for i, chunk in enumerate(chunks):
-            chunk_id = generate_chunk_id(repo_name, path, i)
-            chunk_ids.append(chunk_id)
+            chunk_id = generate_chunk_id()
             ids.append(chunk_id)
             documents.append(chunk)
             metadatas.append(metadata)
@@ -109,11 +114,11 @@ def ingest_repo(
         # Upsert to collection
         try:
             collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-            # Update in-memory records
-            records[path] = {"sha": sha, "chunk_ids": chunk_ids}
+            # Update in-memory records (store sha and chunk_count only)
+            records[path] = {"sha": sha, "chunk_count": chunk_count}
             records_modified = True
             stats["processed"] += 1
-            stats["chunks"] += len(chunks)
+            stats["chunks"] += chunk_count
         except Exception as e:
             print(f"  Error processing {path}: {e}")
             stats["errors"] += 1

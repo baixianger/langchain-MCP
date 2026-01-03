@@ -7,8 +7,14 @@
     "path": "./data/chroma"
   },
   "chunking": {
-    "chunk_size": 1500,
-    "chunk_overlap": 150
+    "docs": {
+      "chunk_size": 2000,
+      "chunk_overlap": 200
+    },
+    "code": {
+      "chunk_size": 4000,
+      "chunk_overlap": 200
+    }
   },
   "repos": {
     "docs": {

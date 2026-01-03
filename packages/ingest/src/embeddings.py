@@ -54,20 +54,48 @@ def get_embedding_function(config: dict) -> EmbeddingFunction:
 
 
 class OpenRouterEmbeddingFunction(EmbeddingFunction):
-    """Custom OpenRouter embedding function."""
+    """OpenRouter embedding function using official SDK with batching."""
 
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, batch_size: int = 10):
+        from openrouter import OpenRouter
         self.model = model
-        self.api_key = api_key
+        self.client = OpenRouter(api_key=api_key)
+        self.batch_size = batch_size
 
     def __call__(self, input: Documents) -> Embeddings:
-        import httpx
-        resp = httpx.post(
-            "https://openrouter.ai/api/v1/embeddings",
-            headers={"Authorization": f"Bearer {self.api_key}"},
-            json={"model": self.model, "input": input},
-            timeout=60.0,
-        )
-        resp.raise_for_status()
-        data = resp.json()["data"]
-        return [d["embedding"] for d in sorted(data, key=lambda x: x["index"])]
+        # Process in batches to avoid API limits
+        all_embeddings = []
+        for i in range(0, len(input), self.batch_size):
+            batch = input[i:i + self.batch_size]
+            embeddings = self._embed_batch(batch)
+            all_embeddings.extend(embeddings)
+        return all_embeddings
+
+    def _embed_batch(self, batch: Documents) -> Embeddings:
+        import time
+
+        max_retries = 3
+        last_error = None
+
+        for attempt in range(max_retries):
+            try:
+                # Use official SDK
+                result = self.client.embeddings.generate(
+                    input=batch,
+                    model=self.model,
+                )
+                # Extract embeddings from response
+                return [d.embedding for d in sorted(result.data, key=lambda x: x.index)]
+
+            except Exception as e:
+                last_error = e
+                error_str = str(e).lower()
+                # Retry on rate limits or server errors
+                if any(x in error_str for x in ["rate", "limit", "429", "500", "502", "503", "504", "timeout"]):
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        time.sleep(wait_time)
+                        continue
+                raise
+
+        raise last_error

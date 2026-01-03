@@ -1,4 +1,5 @@
 import { ChromaClient, Collection, IEmbeddingFunction } from 'chromadb';
+import { OpenRouter } from '@openrouter/sdk';
 
 // Types
 export type RepoName =
@@ -36,40 +37,38 @@ export interface SearchResult {
   repo: RepoName;
 }
 
-// OpenRouter embedding function
+// OpenRouter embedding function using official SDK
 class OpenRouterEmbeddingFunction implements IEmbeddingFunction {
-  private apiKey: string;
+  private client: OpenRouter;
   private model: string;
 
   constructor() {
-    this.apiKey = process.env.OPENROUTER_API_KEY!;
+    this.client = new OpenRouter({
+      apiKey: process.env.OPENROUTER_API_KEY ?? '',
+    });
     this.model = process.env.EMBEDDING_MODEL || 'qwen/qwen3-embedding-8b';
   }
 
   async generate(texts: string[]): Promise<number[][]> {
-    const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: this.model,
-        input: texts,
-      }),
+    const result = await this.client.embeddings.generate({
+      input: texts,
+      model: this.model,
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${response.status}`);
+    // Handle union type: CreateEmbeddingsResponseBody | string
+    if (typeof result === 'string') {
+      throw new Error(`Unexpected string response: ${result}`);
     }
 
-    const data = await response.json() as {
-      data: Array<{ embedding: number[]; index: number }>;
-    };
-
-    return data.data
-      .sort((a, b) => a.index - b.index)
-      .map(item => item.embedding);
+    return result.data
+      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+      .map(item => {
+        // embedding can be Array<number> | string (base64)
+        if (typeof item.embedding === 'string') {
+          throw new Error('Base64 embeddings not supported');
+        }
+        return item.embedding;
+      });
   }
 }
 

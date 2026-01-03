@@ -1,4 +1,16 @@
-"""File processing recorder for incremental ingestion (per-repo)."""
+"""File processing recorder for incremental ingestion (per-repo).
+
+Records structure:
+{
+    "file_path": {"sha": "abc123", "chunk_count": 5},
+    ...
+}
+
+A file needs re-processing if:
+- It's new (not in records)
+- SHA changed (content modified)
+- chunk_count differs (previous ingest may have been interrupted)
+"""
 
 import json
 from pathlib import Path
@@ -26,51 +38,22 @@ def save_records(repo_name: str, records: dict):
     record_file.write_text(json.dumps(records, indent=2))
 
 
-def get_file_record(repo_name: str, file_path: str) -> dict | None:
-    """Get record for a file."""
-    records = load_records(repo_name)
-    return records.get(file_path)
-
-
-def set_file_record(repo_name: str, file_path: str, sha: str, chunk_ids: list[str]):
-    """Set record for a file."""
-    records = load_records(repo_name)
-    records[file_path] = {"sha": sha, "chunk_ids": chunk_ids}
-    save_records(repo_name, records)
-
-
-def should_process(repo_name: str, file_path: str, sha: str) -> tuple[bool, list[str]]:
-    """Check if file should be processed.
-
-    Returns (should_process, old_chunk_ids_to_delete)
-    """
-    record = get_file_record(repo_name, file_path)
-    if record is None:
-        return True, []  # New file
-    if record["sha"] != sha:
-        return True, record.get("chunk_ids", [])  # Changed, delete old chunks
-    return False, []  # Unchanged, skip
-
-
-def clear_repo_records(repo_name: str):
-    """Clear all records for a repo."""
-    record_file = _get_record_file(repo_name)
-    if record_file.exists():
-        record_file.unlink()
-
-
-# Batch operations for performance
-def check_should_process(records: dict, file_path: str, sha: str) -> tuple[bool, list[str]]:
+def check_should_process(records: dict, file_path: str, sha: str, chunk_count: int) -> bool:
     """Check if file should be processed (uses in-memory records).
 
-    Returns (should_process, old_chunk_ids_to_delete)
+    Returns True if file needs processing:
+    - New file (not in records)
+    - SHA changed (content modified)
+    - chunk_count differs (previous ingest may have been interrupted)
     """
     record = records.get(file_path)
     if record is None:
-        return True, []  # New file
+        return True  # New file
     if record["sha"] != sha:
-        return True, record.get("chunk_ids", [])  # Changed, delete old chunks
-    return False, []  # Unchanged, skip
+        return True  # Content changed
+    if record.get("chunk_count") != chunk_count:
+        return True  # Chunk count mismatch (possible incomplete ingest)
+    return False  # Unchanged, skip
 
 
 def batch_save_records(repo_name: str, records: dict):
