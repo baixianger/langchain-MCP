@@ -17,6 +17,14 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         env:
+          # From vars (non-sensitive)
+          PORT: ${{ vars.PORT }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          DB_PATH: ${{ vars.DB_PATH }}
+          CHROMA_PATH: ${{ vars.CHROMA_PATH }}
+          EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL }}
+          # From secrets (sensitive)
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           KOFI_VERIFICATION_TOKEN: ${{ secrets.KOFI_VERIFICATION_TOKEN }}
@@ -25,20 +33,20 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,KOFI_VERIFICATION_TOKEN,OPENROUTER_API_KEY
+          envs: PORT,NODE_ENV,API_BASE_URL,DB_PATH,CHROMA_PATH,EMBEDDING_MODEL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,KOFI_VERIFICATION_TOKEN,OPENROUTER_API_KEY
           script: |
             cd /opt/langchain-mcp
             git pull origin production
-            echo "PORT=3000" > .env
-            echo "NODE_ENV=production" >> .env
-            echo "API_BASE_URL=https://api.langchain-mcp.xyz" >> .env
-            echo "DB_PATH=/opt/langchain-mcp/data/users.db" >> .env
-            echo "CHROMA_PATH=http://localhost:8000" >> .env
+            echo "PORT=${PORT}" > .env
+            echo "NODE_ENV=${NODE_ENV}" >> .env
+            echo "API_BASE_URL=${API_BASE_URL}" >> .env
+            echo "DB_PATH=${DB_PATH}" >> .env
+            echo "CHROMA_PATH=${CHROMA_PATH}" >> .env
+            echo "EMBEDDING_MODEL=${EMBEDDING_MODEL}" >> .env
             echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> .env
             echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" >> .env
             echo "KOFI_VERIFICATION_TOKEN=${KOFI_VERIFICATION_TOKEN}" >> .env
             echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" >> .env
-            echo "EMBEDDING_MODEL=qwen/qwen3-embedding-8b" >> .env
             cd packages/api
             npm install --production
             npm run build
