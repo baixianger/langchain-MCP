@@ -18,7 +18,7 @@
 
 **LangChain MCP** is a Model Context Protocol (MCP) server that provides semantic search across the entire LangChain ecosystem. Build AI applications faster with instant access to documentation and source code for LangChain, LangGraph, LangSmith, and DeepAgents.
 
-![LangChain MCP Homepage](img/homepage.png)
+<img src="img/homepage.png" alt="LangChain MCP Homepage" width="800">
 
 ## Features
 
@@ -110,7 +110,7 @@ langchain-MCP/
 
 #### Architecture
 
-![Architecture](img/Architecture.png)
+<img src="img/Architecture.png" alt="Architecture" width="600">
 
 #### Setup Development Environment
 
