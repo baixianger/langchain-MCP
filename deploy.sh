@@ -28,7 +28,7 @@ rsync -avz --delete \
 
 # Sync public files to nginx root
 echo "📤 Syncing public files to nginx..."
-ssh langchain-mcp "cp /opt/langchain-mcp/api/public/* /var/www/html/"
+ssh langchain-mcp "cp /opt/langchain-mcp/api/public/* /var/www/html/ && chmod 644 /var/www/html/*.{html,txt,xml,png,jpg,jpeg,gif,svg,ico,mov,webm}"
 
 # Rebuild native modules and restart service
 echo "🔄 Rebuilding native modules and restarting..."
