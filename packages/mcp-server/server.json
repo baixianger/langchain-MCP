@@ -4,7 +4,7 @@
   "description": "Semantic search for LangChain, LangGraph, LangSmith & DeepAgents docs and source code.",
   "repository": {
     "url": "https://github.com/baixianger/langchain-mcp",
-    "source": "github"
+    "code": "github"
   },
   "version": "1.2.7",
   "packages": [
