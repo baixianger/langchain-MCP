@@ -45,3 +45,6 @@ __pycache__/
 # MCP Registry tokens
 .mcpregistry_github_token
 .mcpregistry_registry_token
+
+# Temporary posts
+POST.md

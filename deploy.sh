@@ -24,11 +24,12 @@ rsync -avz --delete \
 # Sync node_modules (needed since VPS can't npm install)
 echo "📤 Syncing node_modules..."
 rsync -avz --delete \
+  --exclude 'better-sqlite3/build' \
   node_modules/ langchain-mcp:/opt/langchain-mcp/api/node_modules/
 
 # Sync public files to nginx root
 echo "📤 Syncing public files to nginx..."
-ssh langchain-mcp "cp /opt/langchain-mcp/api/public/* /var/www/html/ && chmod 644 /var/www/html/*.{html,txt,xml,png,jpg,jpeg,gif,svg,ico,mov,webm}"
+ssh langchain-mcp "cp /opt/langchain-mcp/api/public/* /var/www/html/ && chmod 644 /var/www/html/*.{html,txt,xml} 2>/dev/null || chmod 644 /var/www/html/*"
 
 # Rebuild native modules and restart service
 echo "🔄 Rebuilding native modules and restarting..."
