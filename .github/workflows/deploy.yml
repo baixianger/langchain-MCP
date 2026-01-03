@@ -7,6 +7,7 @@ on:
       - 'packages/api/**'
       - 'packages/mcp-server/**'
       - 'config/**'
+      - '.github/workflows/**'
 
 jobs:
   deploy:
@@ -16,7 +17,7 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           KOFI_VERIFICATION_TOKEN: ${{ secrets.KOFI_VERIFICATION_TOKEN }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -28,21 +29,16 @@ jobs:
           script: |
             cd /opt/langchain-mcp
             git pull origin production
-
-            # Update .env with secrets
-            cat > .env << EOF
-            PORT=3000
-            NODE_ENV=production
-            API_BASE_URL=https://api.langchain-mcp.xyz
-            DB_PATH=/opt/langchain-mcp/data/users.db
-            CHROMA_PATH=http://localhost:8000
-            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-            KOFI_VERIFICATION_TOKEN=${KOFI_VERIFICATION_TOKEN}
-            OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-            EMBEDDING_MODEL=qwen/qwen3-embedding-8b
-            EOF
-
+            echo "PORT=3000" > .env
+            echo "NODE_ENV=production" >> .env
+            echo "API_BASE_URL=https://api.langchain-mcp.xyz" >> .env
+            echo "DB_PATH=/opt/langchain-mcp/data/users.db" >> .env
+            echo "CHROMA_PATH=http://localhost:8000" >> .env
+            echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> .env
+            echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" >> .env
+            echo "KOFI_VERIFICATION_TOKEN=${KOFI_VERIFICATION_TOKEN}" >> .env
+            echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" >> .env
+            echo "EMBEDDING_MODEL=qwen/qwen3-embedding-8b" >> .env
             cd packages/api
             npm install --production
             npm run build
