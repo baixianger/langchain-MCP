@@ -110,18 +110,7 @@ langchain-MCP/
 
 #### Architecture
 
-```
-┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-│  Claude Desktop │────▶│  langchain-mcp       │────▶│   API Server    │
-│   / Code / AI   │     │  (npm package)       │     │   (VPS)         │
-└─────────────────┘     └──────────────────────┘     └─────────────────┘
-                                                               │
-                                                               ▼
-                                                      ┌─────────────────┐
-                                                      │   ChromaDB      │
-                                                      │   + Embeddings  │
-                                                      └─────────────────┘
-```
+![Architecture](img/Architecture.png)
 
 #### Setup Development Environment
 
