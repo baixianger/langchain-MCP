@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://langchain-mcp.xyz/sitemap.xml
