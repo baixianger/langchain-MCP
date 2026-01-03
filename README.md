@@ -92,7 +92,7 @@ langchain-mcp logout     # Logout and clear credentials
 
 ## Documentation
 
-### For Developers
+### Self-deploy
 
 #### Project Structure
 
