@@ -50,7 +50,6 @@ Add the following configuration to your client's config file:
 **Claude Desktop**
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- Linux: `~/.config/Claude/claude_desktop_config.json`
 
 **Cursor**
 - macOS/Linux: `~/.cursor/mcp.json`
