@@ -6,7 +6,10 @@
   "description": "Search LangChain, LangGraph, LangSmith & DeepAgents documentation and source code. Give your AI assistant complete LangChain ecosystem knowledge.",
   "version": "1.2.7",
   "homepage": "https://langchain-mcp.xyz",
-  "repository": "https://github.com/baixianger/langchain-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baixianger/langchain-mcp"
+  },
   "license": "MIT",
   "author": {
     "name": "baixianger"
