@@ -34,5 +34,10 @@ npm-debug.log*
 # TypeScript cache
 *.tsbuildinfo
 
+# Python cache
+__pycache__/
+*.pyc
+.venv/
+
 # env
 .env
