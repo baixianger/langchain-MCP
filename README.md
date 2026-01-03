@@ -118,7 +118,7 @@ See: https://docs.trychroma.com/integrations/chroma-integrations
 | `search_docs` | Search documentation, references, and tutorials about LangChain, LangGraph, LangSmith, and DeepAgents | `query`, `limit` |
 | `search_langchain_code` | Search LangChain source code | `query`, `limit`, `language` (py/js) |
 | `search_langgraph_code` | Search LangGraph source code | `query`, `limit`, `language` (py/js) |
-| `search_deepagent_code` | Search DeepAgent source code | `query`, `limit`, `language` (py/js) |
+| `search_deepagents_code` | Search DeepAgents source code | `query`, `limit`, `language` (py/js) |
 
 ## Pricing
 

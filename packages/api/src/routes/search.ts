@@ -115,13 +115,13 @@ router.post('/langgraph', authMiddleware, async (req, res) => {
 });
 
 /**
- * POST /search/deepagent
+ * POST /search/deepagents
  */
-router.post('/deepagent', authMiddleware, async (req, res) => {
+router.post('/deepagents', authMiddleware, async (req, res) => {
   try {
     const input = searchCodeSchema.parse(req.body);
     const vectorStore = await getVectorStore();
-    const results = await vectorStore.searchDeepagent(input.query, {
+    const results = await vectorStore.searchDeepagents(input.query, {
       limit: input.limit,
       language: input.language,
     });

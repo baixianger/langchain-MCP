@@ -81,12 +81,10 @@ export class APIClient {
   async searchDocs(input: {
     query: string;
     limit?: number;
-    language?: 'python' | 'javascript';
   }): Promise<SearchResponse> {
     return this.request('POST', '/search/docs', {
       query: input.query,
       limit: input.limit,
-      language: mapLanguage(input.language),
     });
   }
 
@@ -114,12 +112,12 @@ export class APIClient {
     });
   }
 
-  async searchDeepagentCode(input: {
+  async searchDeepagentsCode(input: {
     query: string;
     limit?: number;
     language?: 'python' | 'javascript';
   }): Promise<SearchResponse> {
-    return this.request('POST', '/search/deepagent', {
+    return this.request('POST', '/search/deepagents', {
       query: input.query,
       limit: input.limit,
       language: mapLanguage(input.language),

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 _config_cache = None
-_project_root = Path(__file__).parents[4]
+_project_root = Path(__file__).parents[3]
 
 def get_project_root() -> Path:
     """Get project root directory."""

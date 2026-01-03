@@ -81,7 +81,7 @@
     "deepagents": {
       "owner": "langchain-ai",
       "repo": "deepagents",
-      "branch": "main",
+      "branch": "master",
       "language": "python",
       "include": ["libs/deepagents/**", "libs/acp/**", "libs/harbor/**"],
       "exclude": ["**/tests/**", "**/__pycache__/**"]

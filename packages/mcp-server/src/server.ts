@@ -7,7 +7,6 @@ import { APIClient, SearchResult } from './api-client.js';
 const searchDocsSchema = z.object({
   query: z.string().describe('Search query'),
   limit: z.number().int().min(1).max(20).default(5).describe('Max results (1-20)'),
-  language: z.enum(['python', 'javascript']).optional().describe('Filter by language'),
 });
 
 const searchCodeSchema = z.object({
@@ -76,7 +75,7 @@ export function createServer(): McpServer {
 
   const server = new McpServer({
     name: 'langchain-mcp',
-    version: '1.2.5',
+    version: '1.2.7',
   });
 
   // search_docs
@@ -163,10 +162,10 @@ export function createServer(): McpServer {
     }
   );
 
-  // search_deepagent_code
+  // search_deepagents_code
   server.tool(
-    'search_deepagent_code',
-    'Search DeepAgent source code. Returns relevant code snippets.',
+    'search_deepagents_code',
+    'Search DeepAgents source code. Returns relevant code snippets.',
     searchCodeSchema.shape,
     async (input) => {
       if (!apiClient) {
@@ -174,7 +173,7 @@ export function createServer(): McpServer {
       }
       try {
         const params = searchCodeSchema.parse(input);
-        const response = await apiClient.searchDeepagentCode(params);
+        const response = await apiClient.searchDeepagentsCode(params);
 
         const formatted = formatCodeResults(response.results);
         const footer = `\n\n---\n_${response.results.length} results | ${response.usage.tokens_used} tokens | $${response.usage.credits_remaining.toFixed(2)} remaining_`;

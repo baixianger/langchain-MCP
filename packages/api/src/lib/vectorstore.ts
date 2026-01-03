@@ -134,7 +134,9 @@ export class VectorStore {
 
         const whereConditions: Record<string, unknown>[] = [];
         if (options?.language) {
-          whereConditions.push({ language: options.language });
+          // Map API short names (py/js) to stored full names (python/javascript)
+          const langMap: Record<string, string> = { py: 'python', js: 'javascript' };
+          whereConditions.push({ language: langMap[options.language] || options.language });
         }
         if (options?.product) {
           whereConditions.push({ product: options.product });
@@ -192,7 +194,7 @@ export class VectorStore {
     return this.search(query, { repos: [repo], limit: options.limit });
   }
 
-  async searchDeepagent(
+  async searchDeepagents(
     query: string,
     options: { limit?: number; language: Language }
   ): Promise<SearchResult[]> {

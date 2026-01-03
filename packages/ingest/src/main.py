@@ -1,12 +1,21 @@
 """Main ingest script."""
 
 import argparse
+import os
+from pathlib import Path
+
 import chromadb
+from dotenv import load_dotenv
+
+# Load .env from project root
+_project_root = Path(__file__).parents[3]
+load_dotenv(_project_root / ".env")
+
 from .config import load_config, get_collection_name, get_repos
 from .embeddings import get_embedding_function
 from .github import fetch_repo
 from .chunker import chunk_text, generate_chunk_id, extract_metadata
-from .recorder import should_process, set_file_record
+from .recorder import load_records, check_should_process, batch_save_records
 
 
 def get_client(config: dict) -> chromadb.ClientAPI:
@@ -53,15 +62,19 @@ def ingest_repo(
         stats["errors"] = 1
         return stats
 
+    # Load records once (batch mode)
+    records = load_records(repo_name) if not force else {}
+    records_modified = False
+
     # Process each file
     for file in files:
         path = file["path"]
         content = file["content"]
         sha = file["sha"]
 
-        # Check if should process
+        # Check if should process (using in-memory records)
         if not force:
-            do_process, old_chunk_ids = should_process(repo_name, path, sha)
+            do_process, old_chunk_ids = check_should_process(records, path, sha)
             if not do_process:
                 stats["skipped"] += 1
                 continue
@@ -96,12 +109,18 @@ def ingest_repo(
         # Upsert to collection
         try:
             collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-            set_file_record(repo_name, path, sha, chunk_ids)
+            # Update in-memory records
+            records[path] = {"sha": sha, "chunk_ids": chunk_ids}
+            records_modified = True
             stats["processed"] += 1
             stats["chunks"] += len(chunks)
         except Exception as e:
             print(f"  Error processing {path}: {e}")
             stats["errors"] += 1
+
+    # Save records once at the end (batch mode)
+    if records_modified:
+        batch_save_records(repo_name, records)
 
     return stats
 

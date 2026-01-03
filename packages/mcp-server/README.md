@@ -40,7 +40,7 @@ langchain-mcp logout   # Logout
 | `search_docs` | Search documentation, references, and tutorials about LangChain, LangGraph, LangSmith, and DeepAgents |
 | `search_langchain_code` | Search LangChain source code |
 | `search_langgraph_code` | Search LangGraph source code |
-| `search_deepagent_code` | Search DeepAgent source code |
+| `search_deepagents_code` | Search DeepAgents source code |
 
 ## Free Credits
 
