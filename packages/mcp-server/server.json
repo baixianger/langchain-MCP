@@ -3,8 +3,9 @@
   "name": "io.github.baixianger/langchain-mcp",
   "description": "Semantic search for LangChain, LangGraph, LangSmith & DeepAgents docs and source code.",
   "repository": {
-    "url": "https://github.com/baixianger/langchain-mcp",
-    "code": "github"
+    "url": "https://github.com/baixianger/langchain-MCP",
+    "source": "github",
+    "subfolder": "packages/mcp-server"
   },
   "version": "1.2.7",
   "packages": [
