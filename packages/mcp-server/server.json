@@ -1,50 +1,20 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
-  "namespace": "io.github.baixianger",
-  "name": "langchain-mcp",
-  "displayName": "LangChain MCP",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.baixianger/langchain-mcp",
   "description": "Search LangChain, LangGraph, LangSmith & DeepAgents documentation and source code. Give your AI assistant complete LangChain ecosystem knowledge.",
-  "version": "1.2.7",
-  "homepage": "https://langchain-mcp.xyz",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/baixianger/langchain-mcp"
+    "url": "https://github.com/baixianger/langchain-mcp",
+    "source": "github"
   },
-  "license": "MIT",
-  "author": {
-    "name": "baixianger"
-  },
-  "categories": ["developer-tools", "documentation", "search"],
-  "tools": [
+  "version": "1.2.7",
+  "packages": [
     {
-      "name": "search_docs",
-      "description": "Search documentation, references, and tutorials about LangChain, LangGraph, LangSmith, and DeepAgents"
-    },
-    {
-      "name": "search_langchain_code",
-      "description": "Search LangChain source code with language filter (Python/JavaScript)"
-    },
-    {
-      "name": "search_langgraph_code",
-      "description": "Search LangGraph source code with language filter (Python/JavaScript)"
-    },
-    {
-      "name": "search_deepagents_code",
-      "description": "Search DeepAgents source code with language filter (Python/JavaScript)"
+      "registryType": "npm",
+      "identifier": "langchain-mcp",
+      "version": "1.2.7",
+      "transport": {
+        "type": "stdio"
+      }
     }
-  ],
-  "deployment": {
-    "type": "package",
-    "package": {
-      "registry": "npm",
-      "name": "langchain-mcp"
-    }
-  },
-  "installation": {
-    "claude-code": "claude mcp add langchain-mcp -- npx -y langchain-mcp",
-    "claude-desktop": {
-      "command": "npx",
-      "args": ["-y", "langchain-mcp"]
-    }
-  }
+  ]
 }
