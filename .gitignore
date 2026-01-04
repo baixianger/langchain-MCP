@@ -8,9 +8,6 @@ dist/
 .env
 .env.local
 
-# ChromaDB data
-data/
-
 # Database files
 *.sqlite
 *.sqlite3
@@ -18,6 +15,10 @@ data/
 *.db-shm
 *.db-wal
 *.db-journal
+
+# Data directory (except scripts)
+data/*
+!data/stats.js
 
 # IDE
 .vscode/
