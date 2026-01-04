@@ -85,8 +85,8 @@ function generateApiKey(userId: string): string {
   const keyId = crypto.randomUUID();
 
   db.prepare(`
-    INSERT INTO api_keys (id, user_id, key_hash, key_prefix)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO api_keys (id, user_id, key_hash, key_prefix, expires_at)
+    VALUES (?, ?, ?, ?, datetime('now', '+60 days'))
   `).run(keyId, userId, keyHash, apiKey.slice(0, 11));
 
   return apiKey;

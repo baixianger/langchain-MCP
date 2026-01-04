@@ -45,7 +45,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 
     // Find API key and join with user
     const result = db.prepare(`
-      SELECT u.id, u.email, u.name, u.credits_cents, ak.id as key_id
+      SELECT u.id, u.email, u.name, u.credits_cents, ak.id as key_id, ak.expires_at
       FROM api_keys ak
       JOIN users u ON u.id = ak.user_id
       WHERE ak.key_hash = ?
@@ -55,11 +55,19 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       name: string;
       credits_cents: number;
       key_id: string;
+      expires_at: string;
     } | undefined;
 
     if (!result) {
       return res.status(401).json({
         error: { code: 'UNAUTHORIZED', message: 'Invalid API key' }
+      });
+    }
+
+    // Check if key is expired
+    if (result.expires_at && new Date(result.expires_at) < new Date()) {
+      return res.status(401).json({
+        error: { code: 'API_KEY_EXPIRED', message: 'API key has expired' }
       });
     }
 

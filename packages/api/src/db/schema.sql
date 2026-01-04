@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
   name TEXT DEFAULT 'default',
   created_at TEXT DEFAULT (datetime('now')),
   last_used_at TEXT,
+  expires_at TEXT,  -- 60 days expiry (set in application code)
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

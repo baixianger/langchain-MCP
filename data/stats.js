@@ -57,12 +57,26 @@ try {
     FROM api_keys
     WHERE last_used_at IS NOT NULL
   `).get();
+  const expiredKeys = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM api_keys
+    WHERE expires_at IS NOT NULL AND datetime(expires_at) < datetime('now')
+  `).get();
+  const expiringKeys = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM api_keys
+    WHERE expires_at IS NOT NULL
+      AND datetime(expires_at) >= datetime('now')
+      AND datetime(expires_at) <= datetime('now', '+30 days')
+  `).get();
 
   console.log('🔑 API Key Statistics');
   console.log('─────────────────────────────────────────────────────');
   console.log(`Total API Keys:     ${apiKeyCount.count}`);
   console.log(`Active Keys:        ${activeKeys.count}`);
   console.log(`Never Used:         ${apiKeyCount.count - activeKeys.count}`);
+  console.log(`Expired Keys:       ${expiredKeys.count}`);
+  console.log(`Expiring Soon:      ${expiringKeys.count} (within 30 days)`);
   console.log('');
 
   // Usage statistics
