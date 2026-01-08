@@ -1,6 +1,6 @@
 {
   "name": "langchain-mcp",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MCP server for LangChain, LangGraph & DeepAgents knowledge + debug your LangGraph agents locally (Polly-like trace analysis)",
   "mcpName": "io.github.baixianger/langchain-mcp",
   "type": "module",

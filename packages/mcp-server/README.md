@@ -74,7 +74,6 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 | `langgraph_get_thread_state` | Get state/checkpoint |
 | `langgraph_list_runs` | List runs for a thread |
 | `langgraph_get_run` | Get run trace details |
-| `langgraph_analyze_trace` | AI analysis of traces |
 
 ---
 

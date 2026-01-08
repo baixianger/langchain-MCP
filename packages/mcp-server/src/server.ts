@@ -115,16 +115,6 @@ const langgraphGetRunSchema = z.object({
   run_id: z.string().describe('Run ID to retrieve'),
 });
 
-const langgraphAnalyzeTraceSchema = z.object({
-  server_url: z.string().url().default(DEFAULT_LANGGRAPH_URL)
-    .describe('LangGraph dev server URL'),
-  thread_id: z.string().describe('Thread ID to analyze'),
-  run_id: z.string().optional()
-    .describe('Specific run ID (if omitted, analyzes latest run)'),
-  question: z.string().optional()
-    .describe('Specific question about the trace (e.g., "Why did the agent fail?")'),
-});
-
 // LangGraph Formatting Functions
 function formatThreadsList(threads: Thread[]): string {
   if (threads.length === 0) {
@@ -251,83 +241,6 @@ function formatRunDetails(run: RunDetails): string {
   if (run.kwargs && Object.keys(run.kwargs).length > 0) {
     output.push('', '### Additional Arguments', '```json', JSON.stringify(run.kwargs, null, 2), '```');
   }
-
-  return output.join('\n');
-}
-
-function formatTraceForAnalysis(
-  thread: Thread,
-  state: ThreadState,
-  run: RunDetails,
-  question?: string
-): string {
-  let output = [
-    '# Trace Analysis Request',
-    '',
-    '## Context',
-    'Below is the trace data from a LangGraph agent execution. Please analyze it and provide insights.',
-    '',
-  ];
-
-  if (question) {
-    output.push(`## User Question`, question, '');
-  }
-
-  output.push(
-    '## Thread Information',
-    `- **Thread ID:** ${thread.thread_id}`,
-    `- **Status:** ${thread.status}`,
-    `- **Created:** ${new Date(thread.created_at).toLocaleString()}`,
-    ''
-  );
-
-  output.push(
-    '## Run Information',
-    `- **Run ID:** ${run.run_id}`,
-    `- **Status:** ${run.status}`,
-    `- **Assistant:** ${run.assistant_id}`,
-    ''
-  );
-
-  if (run.error) {
-    output.push('## Error', '```', run.error, '```', '');
-  }
-
-  if (run.input) {
-    output.push('## Input', '```json', JSON.stringify(run.input, null, 2), '```', '');
-  }
-
-  if (run.output) {
-    output.push('## Output', '```json', JSON.stringify(run.output, null, 2), '```', '');
-  }
-
-  if (state.values && Object.keys(state.values).length > 0) {
-    output.push('## Current State', '```json', JSON.stringify(state.values, null, 2), '```', '');
-  }
-
-  if (state.tasks && state.tasks.length > 0) {
-    output.push('## Execution Tasks');
-    state.tasks.forEach((task, i) => {
-      output.push(`### Task ${i + 1}: ${task.name}`);
-      output.push(`- **ID:** ${task.id}`);
-      if (task.error) output.push(`- **Error:** ${task.error}`);
-      if (task.result) {
-        output.push('- **Result:**', '```json', JSON.stringify(task.result, null, 2), '```');
-      }
-    });
-    output.push('');
-  }
-
-  output.push(
-    '---',
-    '',
-    '## Analysis Instructions',
-    'Please analyze the above trace and provide:',
-    '1. **Summary:** What happened in this execution?',
-    '2. **Issues:** Any errors, failures, or problems identified',
-    '3. **Suggestions:** Recommendations for improving the agent\'s behavior',
-    '4. **Efficiency:** Any unnecessary steps or redundant operations',
-  );
 
   return output.join('\n');
 }
@@ -560,50 +473,6 @@ export function createServer(): McpServer {
         const run = await client.getRun(params.thread_id, params.run_id);
         return {
           content: [{ type: 'text', text: formatRunDetails(run) }],
-        };
-      } catch (error) {
-        return {
-          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
-          isError: true,
-        };
-      }
-    }
-  );
-
-  // langgraph_analyze_trace
-  server.tool(
-    'langgraph_analyze_trace',
-    'Fetch trace data for AI analysis (Polly-like). Returns structured trace data with optional question for analysis. Ask about errors, suggest improvements, identify inefficiencies.',
-    langgraphAnalyzeTraceSchema.shape,
-    async (input) => {
-      try {
-        const params = langgraphAnalyzeTraceSchema.parse(input);
-        const client = new LangGraphClient(params.server_url);
-
-        // Get thread info
-        const thread = await client.getThread(params.thread_id);
-        const state = await client.getThreadState(params.thread_id);
-
-        // Get run (latest if not specified)
-        let run: RunDetails;
-        if (params.run_id) {
-          run = await client.getRun(params.thread_id, params.run_id);
-        } else {
-          // Get latest run
-          const runs = await client.listRuns(params.thread_id, { limit: 1 });
-          if (runs.length === 0) {
-            return {
-              content: [{ type: 'text', text: `No runs found for thread \`${params.thread_id}\`.` }],
-            };
-          }
-          run = await client.getRun(params.thread_id, runs[0].run_id);
-        }
-
-        // Format for analysis
-        const analysisPrompt = formatTraceForAnalysis(thread, state, run, params.question);
-
-        return {
-          content: [{ type: 'text', text: analysisPrompt }],
         };
       } catch (error) {
         return {
