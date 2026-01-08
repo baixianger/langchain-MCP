@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.baixianger/langchain-mcp",
-  "description": "Semantic search for LangChain, LangGraph, LangSmith & DeepAgents docs and source code.",
+  "description": "LangChain/LangGraph/DeepAgents knowledge + LangGraph agent debugging (Polly-like)",
   "repository": {
     "url": "https://github.com/baixianger/langchain-MCP",
     "source": "github",
     "subfolder": "packages/mcp-server"
   },
-  "version": "1.2.8",
+  "version": "2.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "langchain-mcp",
-      "version": "1.2.8",
+      "version": "2.0.0",
       "transport": {
         "type": "stdio"
       }
