@@ -115,6 +115,19 @@ const langgraphGetRunSchema = z.object({
   run_id: z.string().describe('Run ID to retrieve'),
 });
 
+const langgraphListCheckpointsSchema = z.object({
+  server_url: z.string().url().default(DEFAULT_LANGGRAPH_URL)
+    .describe('LangGraph dev server URL'),
+  thread_id: z.string().describe('Thread ID to list checkpoints for'),
+});
+
+const langgraphGetCheckpointSchema = z.object({
+  server_url: z.string().url().default(DEFAULT_LANGGRAPH_URL)
+    .describe('LangGraph dev server URL'),
+  thread_id: z.string().describe('Thread ID'),
+  checkpoint_id: z.string().describe('Checkpoint ID to retrieve'),
+});
+
 // LangGraph Formatting Functions
 function formatThreadsList(threads: Thread[]): string {
   if (threads.length === 0) {
@@ -240,6 +253,72 @@ function formatRunDetails(run: RunDetails): string {
 
   if (run.kwargs && Object.keys(run.kwargs).length > 0) {
     output.push('', '### Additional Arguments', '```json', JSON.stringify(run.kwargs, null, 2), '```');
+  }
+
+  return output.join('\n');
+}
+
+function formatCheckpointsList(states: ThreadState[], threadId: string): string {
+  if (states.length === 0) {
+    return `No checkpoints found for thread \`${threadId}\`.`;
+  }
+
+  const header = `## Checkpoints for Thread \`${threadId}\` (${states.length} total)\n\n`;
+  const header2 = `| # | Checkpoint ID | Step | Source | Next | Created |\n|---|---------------|------|--------|------|---------|`;
+
+  const rows = states.map((state, i) => {
+    const checkpointId = state.checkpoint?.checkpoint_id || 'unknown';
+    const shortId = checkpointId.length > 20 ? checkpointId.slice(0, 20) + '...' : checkpointId;
+    const created = new Date(state.created_at).toLocaleTimeString();
+    const step = (state.metadata as Record<string, unknown>)?.step ?? '-';
+    const source = (state.metadata as Record<string, unknown>)?.source || '-';
+    const next = state.next?.join(', ') || '-';
+
+    return `| ${states.length - i} | \`${shortId}\` | ${step} | ${source} | ${next} | ${created} |`;
+  }).join('\n');
+
+  return header + header2 + '\n' + rows + '\n\n_Use `langgraph_get_checkpoint` with full checkpoint_id to see details._';
+}
+
+function formatCheckpointDetail(state: ThreadState, threadId: string, checkpointId: string): string {
+  const created = new Date(state.created_at).toLocaleString();
+  const step = (state.metadata as Record<string, unknown>)?.step ?? '-';
+  const source = (state.metadata as Record<string, unknown>)?.source || 'unknown';
+  const writes = (state.metadata as Record<string, unknown>)?.writes;
+
+  let output = [
+    `## Checkpoint: \`${checkpointId}\``,
+    '',
+    `**Thread:** ${threadId}`,
+    `**Step:** ${step}`,
+    `**Source:** ${source}`,
+    `**Created:** ${created}`,
+  ];
+
+  if (state.next && state.next.length > 0) {
+    output.push(`**Next:** ${state.next.join(', ')}`);
+  }
+
+  if (state.parent_checkpoint?.checkpoint_id) {
+    output.push(`**Parent Checkpoint:** ${state.parent_checkpoint.checkpoint_id}`);
+  }
+
+  if (writes && Object.keys(writes).length > 0) {
+    output.push('', '### Writes (changes made at this step)', '```json', JSON.stringify(writes, null, 2), '```');
+  }
+
+  if (state.values && Object.keys(state.values).length > 0) {
+    output.push('', '### State Values', '```json', JSON.stringify(state.values, null, 2), '```');
+  }
+
+  if (state.tasks && state.tasks.length > 0) {
+    output.push('', '### Tasks');
+    state.tasks.forEach((task, i) => {
+      output.push(`${i + 1}. **${task.name}** (${task.id})`);
+      if (task.error) {
+        output.push(`   Error: ${task.error}`);
+      }
+    });
   }
 
   return output.join('\n');
@@ -372,7 +451,7 @@ export function createServer(): McpServer {
   // langgraph_list_threads
   server.tool(
     'langgraph_list_threads',
-    'List conversation threads from a local LangGraph dev server. Use this to find threads to debug. Requires a running LangGraph server (langgraph dev).',
+    'List all threads from a LangGraph dev server. Returns thread IDs, status, and timestamps. Requires langgraph dev running.',
     langgraphListThreadsSchema.shape,
     async (input) => {
       try {
@@ -398,7 +477,7 @@ export function createServer(): McpServer {
   // langgraph_get_thread
   server.tool(
     'langgraph_get_thread',
-    'Get detailed information about a specific thread including its current values and metadata.',
+    'Get thread metadata including status, timestamps, and stored values. For current execution state, use langgraph_get_thread_state instead.',
     langgraphGetThreadSchema.shape,
     async (input) => {
       try {
@@ -420,7 +499,7 @@ export function createServer(): McpServer {
   // langgraph_get_thread_state
   server.tool(
     'langgraph_get_thread_state',
-    'Get the current state/checkpoint of a thread, including state values, pending tasks, and next nodes.',
+    'Get the latest execution state of a thread including state values, pending tasks, and next nodes. For historical states, use langgraph_list_checkpoints.',
     langgraphGetThreadStateSchema.shape,
     async (input) => {
       try {
@@ -442,7 +521,7 @@ export function createServer(): McpServer {
   // langgraph_list_runs
   server.tool(
     'langgraph_list_runs',
-    'List runs (executions) for a specific thread. Use this to find specific runs to inspect.',
+    'List all runs for a thread. Each run represents one API invocation. Returns run IDs, status, and timestamps.',
     langgraphListRunsSchema.shape,
     async (input) => {
       try {
@@ -464,7 +543,7 @@ export function createServer(): McpServer {
   // langgraph_get_run
   server.tool(
     'langgraph_get_run',
-    'Get detailed trace information for a specific run, including input, output, and execution details.',
+    'Get details of a specific run including input, output, status, and errors. Note: This returns run metadata, not a step-by-step execution trace.',
     langgraphGetRunSchema.shape,
     async (input) => {
       try {
@@ -473,6 +552,50 @@ export function createServer(): McpServer {
         const run = await client.getRun(params.thread_id, params.run_id);
         return {
           content: [{ type: 'text', text: formatRunDetails(run) }],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // langgraph_list_checkpoints
+  server.tool(
+    'langgraph_list_checkpoints',
+    'List all checkpoints for a thread. Each checkpoint captures state after a node executes. Returns checkpoint IDs, step numbers, source node, and next node.',
+    langgraphListCheckpointsSchema.shape,
+    async (input) => {
+      try {
+        const params = langgraphListCheckpointsSchema.parse(input);
+        const client = new LangGraphClient(params.server_url);
+        const history = await client.getThreadHistory(params.thread_id);
+        return {
+          content: [{ type: 'text', text: formatCheckpointsList(history, params.thread_id) }],
+        };
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Error: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // langgraph_get_checkpoint
+  server.tool(
+    'langgraph_get_checkpoint',
+    'Get full state at a specific checkpoint including state values, writes (changes made), and tasks. Use this to inspect historical execution states.',
+    langgraphGetCheckpointSchema.shape,
+    async (input) => {
+      try {
+        const params = langgraphGetCheckpointSchema.parse(input);
+        const client = new LangGraphClient(params.server_url);
+        const state = await client.getCheckpoint(params.thread_id, params.checkpoint_id);
+        return {
+          content: [{ type: 'text', text: formatCheckpointDetail(state, params.thread_id, params.checkpoint_id) }],
         };
       } catch (error) {
         return {

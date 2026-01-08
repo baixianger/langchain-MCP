@@ -184,6 +184,21 @@ export class LangGraphClient {
   }
 
   /**
+   * Get the full history of a thread (all checkpoints)
+   * Returns states in reverse chronological order (newest first)
+   */
+  async getThreadHistory(threadId: string): Promise<ThreadState[]> {
+    return this.request<ThreadState[]>('GET', `/threads/${threadId}/history`);
+  }
+
+  /**
+   * Get the state at a specific checkpoint
+   */
+  async getCheckpoint(threadId: string, checkpointId: string): Promise<ThreadState> {
+    return this.request<ThreadState>('GET', `/threads/${threadId}/state/${checkpointId}`);
+  }
+
+  /**
    * List runs for a specific thread
    */
   async listRuns(threadId: string, params: RunSearchParams = {}): Promise<Run[]> {
