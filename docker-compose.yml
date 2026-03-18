@@ -1,0 +1,41 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+      network: host
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: packages/api
+      dockerfile: Dockerfile
+      network: host
+    env_file:
+      - .env
+    environment:
+      CHROMA_PATH: http://chromadb:8000
+      DB_PATH: /app/data/users.db
+    volumes:
+      - /opt/langchain-mcp/data:/app/data
+    depends_on:
+      - chromadb
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - /opt/langchain-mcp/data/chroma:/chroma/chroma
+    restart: unless-stopped
+
+networks:
+  default:
+    name: langchain-net
