@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/baixianger-langchain-mcp-badge.png)](https://mseep.ai/app/baixianger-langchain-mcp)
+
 <div align="center">
 
 # LangChain MCP
