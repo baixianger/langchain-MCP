@@ -9,6 +9,8 @@ services:
       - "443:443"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Per-site configs owned by other projects (see nginx.conf header).
+      - /opt/nginx-sites:/etc/nginx/sites-extra:ro
       - /var/www/impai:/var/www/impai:ro
       - /etc/nginx/ssl:/etc/nginx/ssl:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro

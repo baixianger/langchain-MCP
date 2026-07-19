@@ -73,11 +73,11 @@ jobs:
             "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
             "KOFI_VERIFICATION_TOKEN=${KOFI_VERIFICATION_TOKEN}" \
             "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" \
-            > env.rendered
+            > "$RUNNER_TEMP/env.rendered"
 
           # Fail loudly rather than deploying a half-empty .env again.
           for key in GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET OPENROUTER_API_KEY API_BASE_URL; do
-            if grep -q "^${key}=$" env.rendered; then
+            if grep -q "^${key}=$" "$RUNNER_TEMP/env.rendered"; then
               echo "::error::${key} is empty — check the production environment in repo settings"
               exit 1
             fi
@@ -99,8 +99,10 @@ jobs:
 
           # .env is excluded from the rsync above so a stale local copy can
           # never clobber the deployed one — it is installed separately here.
-          ssh langchain-mcp 'umask 077 && cat > /opt/langchain-mcp/.env' < env.rendered
-          rm -f env.rendered
+          # Rendered under RUNNER_TEMP, never inside the checkout: anything in
+          # the working directory gets rsynced to the VPS, and an earlier
+          # version of this leaked the plaintext credentials onto the box.
+          ssh langchain-mcp 'umask 077 && cat > /opt/langchain-mcp/.env' < "$RUNNER_TEMP/env.rendered"
 
       - name: Build and restart containers
         run: |
