@@ -1,0 +1,126 @@
+name: Deploy to VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'config/**'
+      - 'docker/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat >> ~/.ssh/config << EOF
+          Host langchain-mcp
+            HostName $VPS_HOST
+            User $VPS_USER
+            IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+
+          # Runners are IPv4-only. VPS_HOST must be the public IPv4 (or a name
+          # that resolves to it) — an IPv6 literal here cannot be reached.
+          ssh -o ConnectTimeout=15 langchain-mcp 'echo "ssh ok: $(hostname)"'
+
+      - name: Render .env
+        env:
+          # Non-sensitive config lives in environment variables...
+          PORT: ${{ vars.PORT }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          DB_PATH: ${{ vars.DB_PATH }}
+          CHROMA_PATH: ${{ vars.CHROMA_PATH }}
+          EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL }}
+          # ...credentials in environment secrets. These are the only surviving
+          # copy of the Google OAuth credentials — see DEPLOYMENT.md.
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          KOFI_VERIFICATION_TOKEN: ${{ secrets.KOFI_VERIFICATION_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          # Written with printf into a file rather than an inline heredoc over
+          # ssh, which is what the January attempts kept fighting with.
+          # DB_PATH and CHROMA_PATH are overridden by docker-compose.yml for the
+          # container; the values here only matter if the API is run bare.
+          umask 077
+          printf '%s\n' \
+            "PORT=${PORT}" \
+            "NODE_ENV=${NODE_ENV}" \
+            "API_BASE_URL=${API_BASE_URL}" \
+            "DB_PATH=${DB_PATH}" \
+            "CHROMA_PATH=${CHROMA_PATH}" \
+            "EMBEDDING_MODEL=${EMBEDDING_MODEL}" \
+            "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
+            "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
+            "KOFI_VERIFICATION_TOKEN=${KOFI_VERIFICATION_TOKEN}" \
+            "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" \
+            > env.rendered
+
+          # Fail loudly rather than deploying a half-empty .env again.
+          for key in GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET OPENROUTER_API_KEY API_BASE_URL; do
+            if grep -q "^${key}=$" env.rendered; then
+              echo "::error::${key} is empty — check the production environment in repo settings"
+              exit 1
+            fi
+          done
+
+      - name: Sync code and .env to VPS
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.env' \
+            --exclude '.DS_Store' \
+            --exclude '*.log' \
+            --exclude 'node_modules' \
+            --exclude 'packages/api/dist' \
+            --exclude 'packages/ingest/.venv' \
+            --exclude 'packages/mcp-server/dist' \
+            --exclude 'data' \
+            ./ langchain-mcp:/opt/langchain-mcp/
+
+          # .env is excluded from the rsync above so a stale local copy can
+          # never clobber the deployed one — it is installed separately here.
+          ssh langchain-mcp 'umask 077 && cat > /opt/langchain-mcp/.env' < env.rendered
+          rm -f env.rendered
+
+      - name: Build and restart containers
+        run: |
+          ssh langchain-mcp 'cd /opt/langchain-mcp && docker compose up -d --build && docker image prune -f'
+
+      - name: Verify deployment
+        run: |
+          # /health only proves the process is up. The outage this replaces was
+          # a 500 on /auth/google with a perfectly healthy process, so assert
+          # that path too.
+          sleep 10
+
+          health=$(ssh langchain-mcp "curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost/health -H 'Host: api.langchain-mcp.xyz'")
+          echo "GET /health -> $health"
+          [ "$health" = "200" ] || { echo "::error::health check failed"; exit 1; }
+
+          auth=$(ssh langchain-mcp "curl -s -o /dev/null -w '%{http_code}' --max-time 10 'http://localhost/auth/google?callback=https://langchain-mcp.xyz/' -H 'Host: api.langchain-mcp.xyz'")
+          echo "GET /auth/google -> $auth"
+          case "$auth" in
+            30*) echo "OAuth start redirects as expected" ;;
+            500) echo "::error::/auth/google returned 500 — Google OAuth is not configured"; exit 1 ;;
+            *)   echo "::error::/auth/google returned unexpected $auth"; exit 1 ;;
+          esac
